@@ -3,7 +3,7 @@ import pathlib
 import unittest
 
 
-APP_PATH = pathlib.Path(__file__).resolve().parents[1] / "Layonel_No_IT_CleanArchitecture" / "app.py"
+APP_PATH = pathlib.Path(__file__).resolve().parents[1] / "Sulivan" / "app.py"
 spec = importlib.util.spec_from_file_location("lionel_app", APP_PATH)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

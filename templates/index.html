@@ -3,620 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sulivan</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            min-height: 100vh;
-            background-color: #f0f2f5;
-        }
-
-        .container { display: flex; min-height: 100vh; position: relative; }
-
-        /* ─── SIDEBAR PRINCIPAL ─── */
-        .sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, #1e3c72 0%, #2a4a7a 100%);
-            color: white;
-            padding: 25px 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 30px;
-            min-height: 100vh;
-        }
-
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 25px;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-            margin-bottom: 25px;
-        }
-        .sidebar-header h2 { font-size: 24px; font-weight: 600; letter-spacing: 1px; }
-        .sidebar-header p  { font-size: 14px; opacity: 0.8; margin-top: 5px; }
-
-        .sidebar nav ul { list-style: none; }
-        .sidebar nav ul li { margin-bottom: 8px; }
-        .sidebar nav ul li a {
-            color: white; text-decoration: none;
-            display: flex; align-items: center;
-            padding: 12px 15px; border-radius: 10px;
-            transition: all 0.3s; font-size: 16px;
-        }
-        .sidebar nav ul li a:hover  { background-color: rgba(255,255,255,0.15); transform: translateX(5px); }
-        .sidebar nav ul li a.active { background-color: rgba(255,255,255,0.25); }
-        .sidebar nav ul li a i      { margin-right: 12px; font-size: 20px; width: 24px; text-align: center; }
-
-        .menu-divider { height: 1px; background-color: rgba(255,255,255,0.2); margin: 20px 0; }
-
-        /* ─── CONTEÚDO PRINCIPAL ─── */
-        .main-content h1 { color: #1e3c72; margin-bottom: 25px; font-size: 32px; }
-
-        /* ─── VIEWS ─── */
-        #view-home, #view-chat { display: none; }
-        #view-home.active, #view-chat.active { display: block; }
-
-        /* ─── CHAT PAGE ─── */
-        .chat-page {
-            display: flex;
-            height: calc(100vh - 60px);
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-            overflow: hidden;
-        }
-
-        /* ─── SIDEBAR DE HISTÓRICO ─── */
-        .chat-sidebar {
-            width: 260px;
-            background: #f7f9fc;
-            border-right: 1px solid #e0e6ef;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            transition: width 0.3s, padding 0.3s;
-            overflow: hidden;
-        }
-        .chat-sidebar.collapsed { width: 0; }
-
-        .chat-sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid #e0e6ef;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-        }
-        .chat-sidebar-header span { font-weight: 600; color: #1e3c72; font-size: 15px; flex: 1; }
-
-        .btn-new-chat {
-            background: linear-gradient(135deg, #1e3c72, #2a4a7a);
-            color: white; border: none;
-            padding: 7px 14px; border-radius: 20px;
-            font-size: 13px; cursor: pointer;
-            transition: all 0.2s; white-space: nowrap;
-        }
-        .btn-new-chat:hover { transform: scale(1.05); }
-
-        #historyList { flex: 1; overflow-y: auto; padding: 8px 0; }
-        #historyList::-webkit-scrollbar { width: 5px; }
-        #historyList::-webkit-scrollbar-thumb { background: #c0c8d8; border-radius: 10px; }
-
-        .history-section-label {
-            padding: 8px 16px 4px;
-            font-size: 11px; font-weight: 700;
-            color: #999; text-transform: uppercase; letter-spacing: 0.8px;
-        }
-        .history-item {
-            padding: 10px 16px; cursor: pointer;
-            border-radius: 8px; margin: 2px 8px; transition: background 0.2s;
-        }
-        .history-item:hover  { background: #e8eef7; }
-        .history-item.active { background: #dde6f5; }
-        .history-item-title  { font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .history-item-meta   { font-size: 12px; color: #999; margin-top: 2px; }
-        .history-empty { padding: 24px 16px; font-size: 14px; color: #aaa; text-align: center; line-height: 1.8; }
-
-        /* ─── MAIN DO CHAT ─── */
-        .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-        .chat-header {
-            background: linear-gradient(135deg, #1e3c72, #2a4a7a);
-            color: white; padding: 14px 20px;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .btn-toggle-sidebar {
-            background: rgba(255,255,255,0.15); border: none; color: white;
-            width: 34px; height: 34px; border-radius: 8px; font-size: 18px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s; flex-shrink: 0;
-        }
-        .btn-toggle-sidebar:hover { background: rgba(255,255,255,0.25); }
-        .chat-avatar {
-            width: 38px; height: 38px; border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; flex-shrink: 0;
-        }
-        .chat-header-info { flex: 1; min-width: 0; }
-        .chat-header-info h3  { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-header-info span { font-size: 12px; opacity: 0.75; }
-
-        /* ─── MENSAGENS ─── */
-        #chatbox {
-            flex: 1; overflow-y: auto;
-            padding: 20px; display: flex;
-            flex-direction: column; gap: 12px;
-            background: #f7f9fc;
-        }
-        #chatbox::-webkit-scrollbar { width: 6px; }
-        #chatbox::-webkit-scrollbar-thumb { background: #c0c8d8; border-radius: 10px; }
-
-        .separator {
-            text-align: center; font-size: 12px; color: #aaa; margin: 8px 0; position: relative;
-        }
-        .separator::before, .separator::after {
-            content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: #e0e6ef;
-        }
-        .separator::before { left: 0; }
-        .separator::after  { right: 0; }
-
-        .message-row {
-            display: flex; align-items: flex-end; gap: 10px;
-            animation: msgIn 0.2s ease;
-        }
-        .message-row.user { flex-direction: row-reverse; }
-        @keyframes msgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-
-        .msg-avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #dde6f5; display: flex; align-items: center;
-            justify-content: center; font-size: 16px; flex-shrink: 0;
-        }
-        .message {
-            max-width: 65%; padding: 11px 15px; border-radius: 18px;
-            font-size: 15px; line-height: 1.5; word-break: break-word;
-        }
-        .bot-message  { background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-        .user-message { background: linear-gradient(135deg, #1e3c72, #2a4a7a); color: white; border-bottom-right-radius: 4px; }
-
-        /* ─── MARKDOWN RENDERIZADO NAS RESPOSTAS DO BOT ─── */
-        .bot-message h1, .bot-message h2, .bot-message h3 { margin: 8px 0 4px; color: #1e3c72; }
-        .bot-message p  { margin-bottom: 8px; }
-        .bot-message p:last-child { margin-bottom: 0; }
-        .bot-message ul, .bot-message ol { padding-left: 20px; margin-bottom: 8px; }
-        .bot-message li { margin-bottom: 4px; }
-        .bot-message code {
-            background: #f0f2f5; padding: 2px 6px;
-            border-radius: 4px; font-size: 13px; font-family: monospace;
-        }
-        .bot-message pre {
-            background: #f0f2f5; padding: 10px;
-            border-radius: 8px; overflow-x: auto;
-            font-size: 13px; margin-bottom: 8px;
-        }
-        .bot-message pre code { background: none; padding: 0; }
-        .bot-message strong { color: #1e3c72; }
-        .bot-message a { color: #1e3c72; text-decoration: underline; }
-
-        .msg-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-        .message-row.user .msg-meta { flex-direction: row-reverse; }
-        .msg-time   { font-size: 11px; color: #bbb; }
-        .source-tag { font-size: 11px; background: #e8eef7; color: #1e3c72; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
-
-        /* ─── TYPING ─── */
-        .typing-row { display: flex; align-items: flex-end; gap: 10px; }
-        .typing-bubble {
-            display: flex; align-items: center; gap: 5px;
-            padding: 12px 16px; background: white;
-            border-radius: 18px; border-bottom-left-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        .typing-bubble span { width: 8px; height: 8px; background: #aab4c8; border-radius: 50%; animation: bounce 1.2s infinite; }
-        .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
-
-        /* ─── INPUT ─── */
-        .chat-input-area {
-            padding: 14px 18px; background: white;
-            border-top: 1px solid #e8ecf2;
-            display: flex; align-items: center; gap: 10px;
-        }
-        #userInput {
-            flex: 1; border: 2px solid #e0e6ef; border-radius: 50px;
-            padding: 11px 18px; font-size: 15px; outline: none;
-            font-family: inherit; transition: border-color 0.3s; background: #f7f9fc;
-        }
-        #userInput:focus { border-color: #1e3c72; background: white; }
-        #sendBtn {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: linear-gradient(135deg, #1e3c72, #2a4a7a);
-            border: none; cursor: pointer; color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 19px; transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(30,60,114,0.3); flex-shrink: 0;
-        }
-        #sendBtn:hover    { transform: scale(1.1); box-shadow: 0 6px 15px rgba(30,60,114,0.4); }
-        #sendBtn:active   { transform: scale(0.95); }
-        #sendBtn:disabled { opacity: 0.5; cursor: default; transform: none; }
-
-        /* ─── RESPONSIVO ─── */
-        @media (max-width: 1024px) {
-            .sidebar { width: 240px; }
-            .main-content { margin-left: 240px; }
-        }
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; padding: 15px; }
-            .main-content { margin-left: 0; padding: 15px; }
-            .chat-page { height: calc(100vh - 80px); }
-            .chat-sidebar { width: 200px; }
-            .message { max-width: 80%; }
-        }
-    </style>
+    <title>Sulivan - Painel de Controle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 <div class="container">
 
-    <!-- ─── SIDEBAR PRINCIPAL ─── -->
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Menu Principal">
         <div class="sidebar-header">
             <h2>📊 Sulivan</h2>
             <p>Painel de Controle</p>
         </div>
-        <nav>
+        <nav aria-label="Navegação primária">
             <ul>
-                <li><a href="#" onclick="showView('home',this);return false;"><i>🏠</i> Início</a></li>
-                <li><a href="#"><i>📅</i> Calendário</a></li>
-                <li><a href="#"><i>📝</i> Tarefas</a></li>
-                <li><a href="#" onclick="showView('chat',this);return false;"><i>🤖</i> Chat</a></li>
-                <div class="menu-divider"></div>
-                <li><a href="#"><i>⚙️</i> Configurações</a></li>
-                <li><a href="#"><i>👤</i> Perfil</a></li>
-                <li><a href="#"><i>📤</i> Sair</a></li>
+                <li><a href="#home" onclick="app.switchView('home', this); return false;"><i>🏠</i> Início</a></li>
+                <li><a href="#calendario" onclick="app.switchView('section-banner', this); return false;"><i>📅</i> Calendário</a></li>
+                <li><a href="#tarefas" onclick="app.switchView()"<i>📝</i> Tarefas</a></li>
+                <li><a href="#chat" onclick="app.switchView('chat', this); return false;"><i>🤖</i> Chat</a></li>
+                <li class="menu-divider" role="separator"></li>
+                <li><a href="#config"><i>⚙️</i> Configurações</a></li>
+                <li><a href="#perfil"><i>👤</i> Perfil</a></li>
+                <li><a href="#sair"><i>📤</i> Sair</a></li>
             </ul>
         </nav>
     </aside>
 
-    <!-- ─── CONTEÚDO PRINCIPAL ─── -->
     <main class="main-content">
 
-        <!-- VIEW: Início -->
-        <div id="view-home" class="active">
-            <h1>Bem-vindo ao Sulivan</h1>
-        </div>
+        <section id="view-home" class="view-section active" aria-labelledby="home-title">
+            <h1 id="home-title">Bem-vindo ao Sulivan</h1>
+            <p>Selecione o menu "Chat" para iniciar uma conversa.</p>
+        </section>
 
-        <!-- VIEW: Chat -->
-        <div id="view-chat">
+        <section id="view-chat" class="view-section" aria-label="Área de Chat">
             <div class="chat-page">
 
-                <!-- Sidebar de histórico -->
-                <div class="chat-sidebar" id="chatSidebar">
+                <aside class="chat-sidebar" id="chatSidebar" aria-label="Histórico de conversas">
                     <div class="chat-sidebar-header">
                         <span>💬 Histórico</span>
-                        <button class="btn-new-chat" onclick="newChat()">+ Novo</button>
+                        <button class="btn-new-chat" onclick="chat.startNewSession()" aria-label="Iniciar novo chat">+ Novo</button>
                     </div>
-                    <div id="historyList"></div>
-                </div>
+                    <div id="historyList" role="list"></div>
+                </aside>
 
-                <!-- Área principal do chat -->
                 <div class="chat-main">
-                    <div class="chat-header">
-                        <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Histórico">☰</button>
+                    <header class="chat-header">
+                        <button class="btn-toggle-sidebar" onclick="chat.toggleHistorySidebar()" aria-label="Alternar histórico de conversas" title="Alternar Histórico">☰</button>
                         <div class="chat-avatar">🤖</div>
                         <div class="chat-header-info">
                             <h3 id="chatTitle">Nova conversa</h3>
                             <span id="init-time"></span>
                         </div>
-                    </div>
+                    </header>
 
-                    <div id="chatbox"></div>
+                    <div id="chatbox" aria-live="polite" aria-atomic="false"></div>
 
                     <div class="chat-input-area">
-                        <input type="text" id="userInput" placeholder="Digite sua mensagem..." />
-                        <button id="sendBtn" onclick="sendMessage()">➤</button>
+                        <div class="input-wrapper">
+                            <input type="text" id="userInput" placeholder="Digite sua mensagem para o Sulivan..." autocomplete="off" aria-label="Campo de mensagem" />
+                        </div>
+                        <button id="sendBtn" onclick="chat.handleSendMessage()" aria-label="Enviar mensagem">➤</button>
                     </div>
                 </div>
 
             </div>
-        </div>
+        </section>
+
+        <section id="view-section-banner" class="view-section" aria-label="Calendário - Universo">
+
+          <canvas id="universe-canvas"></canvas>
+
+          <div class="overlay-text">
+            <h1>CALENDÁRIO</h1>
+            <p>Mova o mouse para explorar a profundidade</p>
+          </div>
+
+          <div class="section-banner">
+            <div id="star-1">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-2">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-3">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-4">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-5">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-6">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+            <div id="star-7">
+              <div class="curved-corner-star">
+                <div id="curved-corner-bottomright"></div>
+                <div id="curved-corner-bottomleft"></div>
+              </div>
+              <div class="curved-corner-star">
+                <div id="curved-corner-topright"></div>
+                <div id="curved-corner-topleft"></div>
+              </div>
+            </div>
+          </div>
+
+        </section>
 
     </main>
 </div>
 
-<script>
-    // ════════════════════════════════════════
-    // ESTADO
-    // ════════════════════════════════════════
-    let sessions        = [];
-    let activeId        = null;
-    let currentMessages = [];
 
-    document.getElementById('init-time').textContent = now();
-    loadHistory();
-
-    // ════════════════════════════════════════
-    // TROCA DE VIEW
-    // ════════════════════════════════════════
-    function showView(view, linkEl) {
-        document.querySelectorAll('.main-content > div').forEach(el => el.classList.remove('active'));
-        document.getElementById('view-' + view).classList.add('active');
-        document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-        if (linkEl) linkEl.classList.add('active');
-        if (view === 'chat' && !activeId) newChat();
-    }
-
-    // ════════════════════════════════════════
-    // HISTÓRICO — substitua por fetch real quando tiver backend
-    // ════════════════════════════════════════
-    async function loadHistory() {
-        /* TODO (backend):
-            const res = await fetch('/historico');
-            sessions = await res.json();
-        */
-
-        // Dados de exemplo
-        sessions = [
-            {
-                id: 'exemplo-1',
-                title: 'Aula de quarta-feira',
-                date: '06/03/2025',
-                messages: [
-                    { who: 'user', text: 'o que tem na quarta?', time: '19:02' },
-                    { who: 'bot',  text: 'Tem uma aula do balacobaco de INTRODUÇÃO À ENGENHARIA DE SOLUÇÕES com o professor HENRIQUE LIMA. Começa às 19:00 e termina às 22:40. Local é BLOCO H, SALA 110 📚', source: 'regras', time: '19:02' }
-                ]
-            },
-            {
-                id: 'exemplo-2',
-                title: 'Teste do sistema',
-                date: '05/03/2025',
-                messages: [
-                    { who: 'user', text: 'qual o seu nome?', time: '20:15' },
-                    { who: 'bot',  text: 'Meu nome é Lionel No IT 😉', source: 'regras', time: '20:15' }
-                ]
-            }
-        ];
-
-        renderSidebar();
-    }
-
-    async function saveCurrentSession(messages) {
-        if (!activeId || messages.length === 0) return;
-
-        const firstUserMsg = messages.find(m => m.who === 'user');
-        const title = firstUserMsg
-            ? firstUserMsg.text.slice(0, 30) + (firstUserMsg.text.length > 30 ? '…' : '')
-            : 'Conversa';
-
-        const today    = new Date().toLocaleDateString('pt-BR');
-        const existing = sessions.findIndex(s => s.id === activeId);
-        const session  = { id: activeId, title, date: today, messages };
-
-        if (existing >= 0) sessions[existing] = session;
-        else sessions.unshift(session);
-
-        /* TODO (backend):
-            await fetch('/historico', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(session)
-            });
-        */
-
-        renderSidebar();
-    }
-
-    // ════════════════════════════════════════
-    // SIDEBAR DE HISTÓRICO
-    // ════════════════════════════════════════
-    function renderSidebar() {
-        const list = document.getElementById('historyList');
-
-        if (sessions.length === 0) {
-            list.innerHTML = `<div class="history-empty">Nenhuma conversa ainda.<br>Manda uma mensagem! 👀</div>`;
-            return;
-        }
-
-        const groups = {};
-        sessions.forEach(s => {
-            const key = s.date || 'Sem data';
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(s);
-        });
-
-        list.innerHTML = '';
-        Object.entries(groups).forEach(([date, items]) => {
-            const label = document.createElement('div');
-            label.className = 'history-section-label';
-            label.textContent = date;
-            list.appendChild(label);
-
-            items.forEach(s => {
-                const item = document.createElement('div');
-                item.className = 'history-item' + (s.id === activeId ? ' active' : '');
-                item.innerHTML = `
-                    <div class="history-item-title">${escHtml(s.title)}</div>
-                    <div class="history-item-meta">${s.messages.length} mensagem(s)</div>
-                `;
-                item.onclick = () => openSession(s.id);
-                list.appendChild(item);
-            });
-        });
-    }
-
-    function toggleSidebar() {
-        document.getElementById('chatSidebar').classList.toggle('collapsed');
-    }
-
-    // ════════════════════════════════════════
-    // SESSÕES
-    // ════════════════════════════════════════
-    function newChat() {
-        activeId        = 'sess-' + Date.now();
-        currentMessages = [];
-
-        const chatbox = document.getElementById('chatbox');
-        chatbox.innerHTML = `
-            <div class="separator">hoje</div>
-            <div class="message-row">
-                <div class="msg-avatar">🤖</div>
-                <div>
-                    <div class="message bot-message">Olá! Como posso ajudar hoje? 👀</div>
-                    <div class="msg-meta"><span class="msg-time">${now()}</span></div>
-                </div>
+<div class="container-ai-input">
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <div class="area"></div>
+  <label class="container-wrap">
+    <input type="checkbox" />
+    <div class="card">
+      <div class="background-blur-balls">
+        <div class="balls">
+          <span class="ball rosa"></span>
+          <span class="ball violet"></span>
+          <span class="ball green"></span>
+          <span class="ball cyan"></span>
+        </div>
+      </div>
+      <div class="content-card">
+        <div class="background-blur-card">
+          <div class="eyes">
+            <span class="eye"></span>
+            <span class="eye"></span>
+          </div>
+          <div class="eyes happy">
+            <svg fill="none" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M8.28386 16.2843C8.9917 15.7665 9.8765 14.731 12 14.731C14.1235 14.731 15.0083 15.7665 15.7161 16.2843C17.8397 17.8376 18.7542 16.4845 18.9014 15.7665C19.4323 13.1777 17.6627 11.1066 17.3088 10.5888C16.3844 9.23666 14.1235 8 12 8C9.87648 8 7.61556 9.23666 6.69122 10.5888C6.33728 11.1066 4.56771 13.1777 5.09858 15.7665C5.24582 16.4845 6.16034 17.8376 8.28386 16.2843Z"
+              ></path>
+            </svg>
+            <svg fill="none" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M8.28386 16.2843C8.9917 15.7665 9.8765 14.731 12 14.731C14.1235 14.731 15.0083 15.7665 15.7161 16.2843C17.8397 17.8376 18.7542 16.4845 18.9014 15.7665C19.4323 13.1777 17.6627 11.1066 17.3088 10.5888C16.3844 9.23666 14.1235 8 12 8C9.87648 8 7.61556 9.23666 6.69122 10.5888C6.33728 11.1066 4.56771 13.1777 5.09858 15.7665C5.24582 16.4845 6.16034 17.8376 8.28386 16.2843Z"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="container-ai-chat">
+        <div class="chat">
+          <div class="chat-bot">
+            <div id="mini-response"></div>
+            <textarea
+              placeholder="Imagine Something...✦˚"
+              name="chat_bot"
+              id="chat_bot"
+            ></textarea>
+          </div>
+          <div class="options">
+            <div class="btns-add">
+              <button>
+                <svg
+                  viewBox="0 0 24 24"
+                  height="20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7 8v8a5 5 0 1 0 10 0V6.5a3.5 3.5 0 1 0-7 0V15a2 2 0 0 0 4 0V8"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                  ></path>
+                </svg>
+              </button>
+              <button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 10a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm10 0a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm0-8h6m-3-3v6"
+                  ></path>
+                </svg>
+              </button>
+              <button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10m-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.01 8.01 0 0 0 5.648 6.667M10.03 13c.151 2.439.848 4.73 1.97 6.752A15.9 15.9 0 0 0 13.97 13zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.01 8.01 0 0 0 19.938 13M4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333A8.01 8.01 0 0 0 4.062 11m5.969 0h3.938A15.9 15.9 0 0 0 12 4.248A15.9 15.9 0 0 0 10.03 11m4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.01 8.01 0 0 0-5.648-6.667"
+                  ></path>
+                </svg>
+              </button>
             </div>
-        `;
+            <button class="btn-submit">
+              <i>
+                <svg viewBox="0 0 512 512">
+                  <path
+                    d="M473 39.05a24 24 0 0 0-25.5-5.46L47.47 185h-.08a24 24 0 0 0 1 45.16l.41.13l137.3 58.63a16 16 0 0 0 15.54-3.59L422 80a7.07 7.07 0 0 1 10 10L226.66 310.26a16 16 0 0 0-3.59 15.54l58.65 137.38c.06.2.12.38.19.57c3.2 9.27 11.3 15.81 21.09 16.25h1a24.63 24.63 0 0 0 23-15.46L478.39 64.62A24 24 0 0 0 473 39.05"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </label>
+</div>
+<ul class="example-2">
+  <li class="icon-content">
+    <a
+      href="https://linkedin.com/"
+      aria-label="LinkedIn"
+      data-social="linkedin"
+    >
+      <div class="filled"></div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-linkedin"
+        viewBox="0 0 16 16"
+        xml:space="preserve"
+      >
+        <path
+          d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"
+          fill="currentColor"
+        ></path>
+      </svg>
+    </a>
+    <div class="tooltip">LinkedIn</div>
+  </li>
+  <li class="icon-content">
+    <a href="https://www.github.com/" aria-label="GitHub" data-social="github">
+      <div class="filled"></div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-github"
+        viewBox="0 0 16 16"
+        xml:space="preserve"
+      >
+        <path
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"
+          fill="currentColor"
+        ></path>
+      </svg>
+    </a>
+    <div class="tooltip">GitHub</div>
+  </li>
+  <li class="icon-content">
+    <a
+      href="https://www.instagram.com/"
+      aria-label="Instagram"
+      data-social="instagram"
+    >
+      <div class="filled"></div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-instagram"
+        viewBox="0 0 16 16"
+        xml:space="preserve"
+      >
+        <path
+          d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"
+          fill="currentColor"
+        ></path>
+      </svg>
+    </a>
+    <div class="tooltip">Instagram</div>
+  </li>
+  <li class="icon-content">
+    <a href="https://youtube.com/" aria-label="Youtube" data-social="youtube">
+      <div class="filled"></div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-youtube"
+        viewBox="0 0 16 16"
+        xml:space="preserve"
+      >
+        <path
+          d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A100 100 0 0 1 7.858 2zM6.4 5.209v4.818l4.157-2.408z"
+          fill="currentColor"
+        ></path>
+      </svg>
+    </a>
+    <div class="tooltip">Youtube</div>
+  </li>
+</ul>
 
-        document.getElementById('chatTitle').textContent = 'Nova conversa';
-        document.getElementById('userInput').focus();
-        renderSidebar();
-    }
-
-    function openSession(id) {
-        const session = sessions.find(s => s.id === id);
-        if (!session) return;
-
-        activeId        = id;
-        currentMessages = [...session.messages];
-
-        const chatbox = document.getElementById('chatbox');
-        chatbox.innerHTML = `<div class="separator">${session.date}</div>`;
-
-        session.messages.forEach(m => renderMessage(m.who, m.text, m.source, m.time));
-
-        document.getElementById('chatTitle').textContent = session.title;
-        chatbox.scrollTop = chatbox.scrollHeight;
-        renderSidebar();
-    }
-
-    // ════════════════════════════════════════
-    // ENVIO — conecta ao /chat do seu backend
-    // ════════════════════════════════════════
-    async function sendMessage() {
-        const userInput = document.getElementById('userInput');
-        const chatbox   = document.getElementById('chatbox');
-        const sendBtn   = document.getElementById('sendBtn');
-        const text      = userInput.value.trim();
-        if (!text) return;
-
-        if (!activeId) activeId = 'sess-' + Date.now();
-
-        const userTime = now();
-        renderMessage('user', text, null, userTime);
-        currentMessages.push({ who: 'user', text, time: userTime });
-
-        userInput.value  = '';
-        sendBtn.disabled = true;
-
-        // Typing indicator
-        const typingRow = document.createElement('div');
-        typingRow.classList.add('typing-row');
-        typingRow.id = 'typing';
-        typingRow.innerHTML = `
-            <div class="msg-avatar">🤖</div>
-            <div class="typing-bubble"><span></span><span></span><span></span></div>
-        `;
-        chatbox.appendChild(typingRow);
-        chatbox.scrollTop = chatbox.scrollHeight;
-
-        try {
-            const res = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: text })
-            });
-
-            let data = {};
-            try {
-                data = await res.json();
-                console.log("Resposta do servidor:", data);
-            } catch { data = {}; }
-
-            document.getElementById('typing')?.remove();
-
-            const respostaSegura = (typeof data.response?.resposta === 'string' && data.response.resposta.trim())
-                ? data.response.resposta
-                : (typeof data.erro === 'string' && data.erro.trim())
-                    ? `⚠️ ${data.erro}`
-                    : '⚠️ Não consegui entender a resposta do servidor.';
-
-            const sourceSegura = typeof data.source === 'string' ? data.source : null;
-            const botTime      = now();
-
-            renderMessage('bot', respostaSegura, sourceSegura, botTime);
-            currentMessages.push({ who: 'bot', text: respostaSegura, source: sourceSegura, time: botTime });
-
-            await saveCurrentSession(currentMessages);
-
-        } catch {
-            document.getElementById('typing')?.remove();
-            renderMessage('bot', '⚠️ Servidor offline. Certifique-se que o app.py está rodando.', null, now());
-        }
-
-        sendBtn.disabled  = false;
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    // ════════════════════════════════════════
-    // RENDER
-    // ════════════════════════════════════════
-    function renderMessage(who, text, source, time) {
-        const chatbox  = document.getElementById('chatbox');
-        const row      = document.createElement('div');
-        row.classList.add('message-row');
-        if (who === 'user') row.classList.add('user');
-
-        const icon     = who === 'user' ? '🧑' : '🤖';
-        const msgClass = who === 'user' ? 'user-message' : 'bot-message';
-        const badge    = (source && source !== 'regras' && source !== 'fallback')
-            ? `<span class="source-tag">${escHtml(source)}</span>` : '';
-
-        // Bot já retorna HTML (markdown convertido pela API) — exibe direto
-        // Usuário: escapa para evitar injeção
-        const conteudo = who === 'bot' ? text : escHtml(text);
-
-        row.innerHTML = `
-            <div class="msg-avatar">${icon}</div>
-            <div>
-                <div class="message ${msgClass}">${conteudo}</div>
-                <div class="msg-meta">
-                    ${badge}
-                    <span class="msg-time">${time || now()}</span>
-                </div>
-            </div>
-        `;
-        chatbox.appendChild(row);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    // ════════════════════════════════════════
-    // HELPERS
-    // ════════════════════════════════════════
-    function now() {
-        return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function escHtml(str) {
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-    }
-
-    document.getElementById('userInput').addEventListener('keypress', e => {
-        if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
-    });
-</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

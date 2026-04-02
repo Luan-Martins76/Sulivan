@@ -75,10 +75,10 @@
     "campus_senador_canedo": {
 
         "curso": ["DIREITO"],
-        "guantidade_cursos": 1
+        "quantidade_cursos": 1
     },
 
-    "acdoc": {
+    "campus_acdoc": {
         "curso": [
             "AcDOC - Lifelong Learning",
             "AcDOC - Capacitação em Pesquisa",
@@ -91,16 +91,16 @@
             "AcDOC - Neurociência da Aprendizagem",
             "AcDOC - Onboarding Docente"
         ],
-        "guantidade_cursos": 10 
+        "quantidade_cursos": 10 
     },
 
-    "capelania": {
+    "campus_capelania": {
 
         "curso": "Integração-Fé e Aprendizagem",
-        "guantidade_cursos": 1
+        "quantidade_cursos": 1
     },
 
-    "centro_linguas": {
+    "campus_centro_linguas": {
 
         "curso": [
             "Cursos Online - Lite",
@@ -112,10 +112,10 @@
             "PREPARATÓRIO TOEFL",
             "PREPARATORIO TOEFL IBT - TOEFL IBT PREPARATORY COURSE"
         ],
-        "guantidade_cursos": 8
+        "quantidade_cursos": 8
     },
 
-    "cursos_livres": {
+    "campus_cursos_livres": {
 
         "curso": [
             "Apoio a Adictos de Psicoativos: abordagens e estratégias",
@@ -138,12 +138,12 @@
             "Técnicas para o Planejamento de Carreira",
             "Tendências em Marketing Digital"
         ],
-        "guantidade_cursos": 19
+        "quantidade_cursos": 19
     },
     
-    "graduação": {
+    "campus_graduação": {
 
-        "cursos": [
+        "curso": [
         "ADMINISTRAÇÃO",
         "AGRONOMIA",
         "ARQUITETURA E URBANISMO",
@@ -171,17 +171,17 @@
         "PSICOLOGIA",
         "RELAÇÕES INTERNACIONAIS"
         ],
-        "guantidade_cursos": 26
+        "quantidade_cursos": 26
     },
     
-    "miscellaneous": {
+    "campus_miscellaneous": {
         "curso": "Área 51",
-        "guantidade_cursos": 1
+        "quantidade_cursos": 1
     },
 
-    "pos_graduacao(lato-sensu)": {
+    "campus_pos_graduacao(lato-sensu)": {
 
-        "cursos": [
+        "curso": [
             "Abordagens Educacionais Comparadas",
             "Antropologia Intercultural",
             "Cosmovisão Cristã e Educação",
@@ -204,9 +204,9 @@
         "guantidade_cursos": 18
     },
 
-    "pos_graduacao(stricto-sensu)": {
+    "campus_pos_graduacao(stricto-sensu)": {
 
-       "cursos": [
+       "curso": [
             "PPGCF",
             "PPGCFFT",
             "PPGMHR",
@@ -215,28 +215,33 @@
             "PPGSTMA - MINTER",
             "SUFICIÊNCIA"
         ],
-        "guantidade_cursos": 7
+        "quantidade_cursos": 7
     },
 
-    "all": [
-        "AcDOC",
-        "Campus Anápolis",
-        "Campus Ceres",
-        "Campus Jaraguá",
-        "Campus Rubiataba",
-        "Campus Senador Canedo",
-        "Capelania",
-        "Centro de Linguas",
-        "Cursos Livres",
-        "Graduação",
-        "Miscellaneous",
-        "Núcleo de Assuntos Internacionais",
-        "Núcleo de Educação Ambiental",
-        "Pós-Graduação (Lato-Sensu)",
-        "Pós-Graduação (Stricto-Sensu)",
-        "Programa de Aprendizagem e Nivelamento (PAN)",
-        "UniCIETEC",
-        "UniMISSÕES",
-        "UniSOCIAL"
-    ]
+    "campus_all": {
+
+        "curso": [
+            "AcDOC",
+            "Campus Anápolis",
+            "Campus Ceres",
+            "Campus Jaraguá",
+            "Campus Rubiataba",
+            "Campus Senador Canedo",
+            "Capelania",
+            "Centro de Linguas",
+            "Cursos Livres",
+            "Graduação",
+            "Miscellaneous",
+            "Núcleo de Assuntos Internacionais",
+            "Núcleo de Educação Ambiental",
+            "Pós-Graduação (Lato-Sensu)",
+            "Pós-Graduação (Stricto-Sensu)",
+            "Programa de Aprendizagem e Nivelamento (PAN)",
+            "UniCIETEC",
+            "UniMISSÕES",
+            "UniSOCIAL"
+        ],
+        "quantidade_cursos": 19
+    }
+
 }

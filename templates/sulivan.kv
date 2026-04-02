@@ -1,0 +1,416 @@
+# sulivan.kv
+# ─────────────────────────────────────────────────────────────
+# Paleta de cores (mesmas do CSS original)
+#   Azul escuro:  #1e3c72  →  0.118, 0.235, 0.447
+#   Azul médio:   #2a4a7a  →  0.165, 0.290, 0.478
+#   Fundo claro:  #f0f2f5  →  0.941, 0.949, 0.961
+#   Painel chat:  #f7f9fc  →  0.969, 0.976, 0.988
+# ─────────────────────────────────────────────────────────────
+
+# ════════════════════════════════════════════════════════════
+# MessageRow — bolha de mensagem
+# CSS equivalente: .message-row / .bot-message / .user-message
+# ════════════════════════════════════════════════════════════
+<MessageRow>:
+    orientation: 'horizontal' if self.who == 'bot' else 'horizontal'
+    size_hint_y: None
+    height: msg_label.texture_size[1] + dp(32)
+    padding: dp(8)
+    spacing: dp(8)
+
+    # Alinha mensagens do usuário à direita invertendo a ordem
+    canvas.before:
+        Color:
+            rgba: 0, 0, 0, 0   # transparente (fundo já vem do pai)
+
+    # ── Avatar ──────────────────────────────────────────────
+    # CSS: .msg-avatar { width:32px; border-radius:50%; }
+    Label:
+        text: root.icon
+        font_size: '22sp'
+        size_hint: None, None
+        size: dp(36), dp(36)
+        # Empurra o avatar para a direita quando for usuário
+        pos_hint: {'right': 1} if root.who == 'user' else {'x': 0}
+
+    # ── Bolha ───────────────────────────────────────────────
+    # CSS: .message { max-width:65%; border-radius:18px; }
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: 0.75
+        spacing: dp(2)
+
+        Label:
+            id: msg_label
+            text: root.text
+            font_size: '15sp'
+            text_size: self.width, None
+            size_hint_y: None
+            height: self.texture_size[1] + dp(20)
+            halign: 'right' if root.who == 'user' else 'left'
+            valign: 'middle'
+            padding: dp(12), dp(8)
+            # Cor do texto
+            color: (1,1,1,1) if root.who == 'user' else (0.2,0.2,0.2,1)
+            canvas.before:
+                Color:
+                    # usuário → azul  |  bot → branco
+                    rgba: (0.118,0.235,0.447,1) if root.who=='user' else (1,1,1,1)
+                RoundedRectangle:
+                    pos:  self.pos
+                    size: self.size
+                    radius: [18, 18, (4 if root.who=='user' else 18), (18 if root.who=='user' else 4)]
+
+        # Horário da mensagem
+        # CSS: .msg-time { font-size:12px; color:#999; }
+        Label:
+            text: root.time
+            font_size: '11sp'
+            color: 0.6, 0.6, 0.6, 1
+            size_hint_y: None
+            height: dp(18)
+            halign: 'right' if root.who == 'user' else 'left'
+            text_size: self.size
+
+
+# ════════════════════════════════════════════════════════════
+# HistoryItem — item da sidebar de histórico
+# CSS equivalente: .history-item
+# ════════════════════════════════════════════════════════════
+<HistoryItem>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: dp(58)
+    padding: dp(12), dp(6)
+    spacing: dp(2)
+
+    canvas.before:
+        Color:
+            rgba: (0.867,0.902,0.961,1) if self.active else (0,0,0,0)
+        RoundedRectangle:
+            pos:  self.pos
+            size: self.size
+            radius: [8]
+
+    Label:
+        text: root.title
+        font_size: '14sp'
+        color: 0.2, 0.2, 0.2, 1
+        halign: 'left'
+        text_size: self.size
+        shorten: True
+        shorten_from: 'right'
+
+    Label:
+        text: root.subtitle
+        font_size: '12sp'
+        color: 0.6, 0.6, 0.6, 1
+        halign: 'left'
+        text_size: self.size
+
+
+# ════════════════════════════════════════════════════════════
+# NavSidebar — menu lateral principal
+# CSS equivalente: .sidebar  (background azul, navegação)
+# ════════════════════════════════════════════════════════════
+<NavSidebar>:
+    orientation: 'vertical'
+    size_hint_x: None
+    width: dp(220)
+    padding: dp(16)
+    spacing: dp(10)
+
+    canvas.before:
+        Color:
+            rgba: 0.118, 0.235, 0.447, 1   # #1e3c72
+        Rectangle:
+            pos:  self.pos
+            size: self.size
+
+    # ── Cabeçalho ───────────────────────────────────────────
+    # CSS: .sidebar-header
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None
+        height: dp(80)
+        spacing: dp(4)
+
+        Label:
+            text: 'Sulivan'
+            font_size: '22sp'
+            bold: True
+            color: 1, 1, 1, 1
+            halign: 'center'
+
+        Label:
+            text: 'Assistente Virtual'
+            font_size: '13sp'
+            color: 1, 1, 1, 0.7
+            halign: 'center'
+
+    # Divisor
+    # CSS: .menu-divider
+    BoxLayout:
+        size_hint_y: None
+        height: dp(1)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 0.2
+            Rectangle:
+                pos:  self.pos
+                size: self.size
+
+    # ── Itens de menu ───────────────────────────────────────
+    # CSS: .sidebar nav ul li a
+    Button:
+        text: '🏠  Início'
+        font_size: '16sp'
+        background_color: 0, 0, 0, 0
+        color: 1, 1, 1, 1
+        halign: 'left'
+        size_hint_y: None
+        height: dp(48)
+        on_release:
+            app.root.ids.screen_manager.current = 'home'
+
+    Button:
+        text: '💬  Chat'
+        font_size: '16sp'
+        background_color: 0, 0, 0, 0
+        color: 1, 1, 1, 1
+        halign: 'left'
+        size_hint_y: None
+        height: dp(48)
+        on_release:
+            app.root.ids.screen_manager.current = 'chat'
+
+    # Espaço restante
+    Widget:
+
+
+# ════════════════════════════════════════════════════════════
+# HomeScreen — tela inicial
+# CSS equivalente: #view-home
+# ════════════════════════════════════════════════════════════
+<HomeScreen>:
+    canvas.before:
+        Color:
+            rgba: 0.941, 0.949, 0.961, 1   # #f0f2f5
+        Rectangle:
+            pos:  self.pos
+            size: self.size
+
+    Label:
+        text: 'Bem-vindo ao Sulivan! 👋'
+        font_size: '28sp'
+        bold: True
+        color: 0.118, 0.235, 0.447, 1
+        halign: 'center'
+
+
+# ════════════════════════════════════════════════════════════
+# ChatScreen — tela de chat
+# CSS equivalente: #view-chat / .chat-page
+# ════════════════════════════════════════════════════════════
+<ChatScreen>:
+    BoxLayout:
+        orientation: 'horizontal'
+
+        # ── Sidebar de histórico ─────────────────────────────
+        # CSS: .chat-sidebar { width:260px; background:#f7f9fc; }
+        BoxLayout:
+            id: chat_sidebar
+            orientation: 'vertical'
+            size_hint_x: None
+            width: dp(240)
+
+            canvas.before:
+                Color:
+                    rgba: 0.969, 0.976, 0.988, 1   # #f7f9fc
+                Rectangle:
+                    pos:  self.pos
+                    size: self.size
+
+            # Cabeçalho da sidebar de histórico
+            # CSS: .chat-sidebar-header
+            BoxLayout:
+                size_hint_y: None
+                height: dp(52)
+                padding: dp(12), dp(8)
+                spacing: dp(8)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.878, 0.902, 0.937, 1
+                    Rectangle:
+                        pos:  [self.x, self.y]
+                        size: [self.width, dp(1)]
+
+                Label:
+                    text: 'Histórico'
+                    font_size: '15sp'
+                    bold: True
+                    color: 0.118, 0.235, 0.447, 1
+                    halign: 'left'
+                    text_size: self.size
+
+                # CSS: .btn-new-chat
+                Button:
+                    text: '+ Novo'
+                    font_size: '13sp'
+                    size_hint_x: None
+                    width: dp(70)
+                    background_color: 0.118, 0.235, 0.447, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.new_chat()
+
+            # Lista de histórico com scroll
+            # CSS: #historyList { overflow-y: auto; }
+            ScrollView:
+                do_scroll_x: False
+                BoxLayout:
+                    id: history_list
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+
+        # ── Área principal do chat ───────────────────────────
+        # CSS: .chat-main { flex:1; flex-direction:column; }
+        BoxLayout:
+            orientation: 'vertical'
+
+            canvas.before:
+                Color:
+                    rgba: 0.941, 0.949, 0.961, 1
+                Rectangle:
+                    pos:  self.pos
+                    size: self.size
+
+            # ── Header do chat ───────────────────────────────
+            # CSS: .chat-header { background: linear-gradient(...); }
+            BoxLayout:
+                size_hint_y: None
+                height: dp(56)
+                padding: dp(12), dp(8)
+                spacing: dp(10)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.118, 0.235, 0.447, 1
+                    Rectangle:
+                        pos:  self.pos
+                        size: self.size
+
+                # CSS: .btn-toggle-sidebar
+                Button:
+                    text: '☰'
+                    font_size: '20sp'
+                    size_hint_x: None
+                    width: dp(36)
+                    background_color: 1, 1, 1, 0.15
+                    color: 1, 1, 1, 1
+                    on_release: root.toggle_sidebar()
+
+                # Avatar
+                # CSS: .chat-avatar
+                Label:
+                    text: '🤖'
+                    font_size: '22sp'
+                    size_hint_x: None
+                    width: dp(36)
+
+                # Título + status
+                # CSS: .chat-header-info
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(2)
+
+                    Label:
+                        id: chat_title
+                        text: 'Nova conversa'
+                        font_size: '16sp'
+                        bold: True
+                        color: 1, 1, 1, 1
+                        halign: 'left'
+                        text_size: self.size
+                        shorten: True
+
+                    Label:
+                        text: 'online'
+                        font_size: '11sp'
+                        color: 1, 1, 1, 0.75
+                        halign: 'left'
+                        text_size: self.size
+
+            # ── Área de mensagens ────────────────────────────
+            # CSS: #chatbox { flex:1; overflow-y:auto; }
+            ScrollView:
+                id: chat_scroll
+                do_scroll_x: False
+
+                BoxLayout:
+                    id: chatbox
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(12)
+                    spacing: dp(10)
+
+            # ── Área de input ────────────────────────────────
+            # CSS: .chat-input-area
+            BoxLayout:
+                size_hint_y: None
+                height: dp(64)
+                padding: dp(10), dp(8)
+                spacing: dp(8)
+
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos:  self.pos
+                        size: self.size
+
+                # CSS: .chat-input textarea
+                TextInput:
+                    id: user_input
+                    hint_text: 'Digite sua mensagem…'
+                    font_size: '15sp'
+                    multiline: False
+                    background_color: 0.941, 0.949, 0.961, 1
+                    foreground_color: 0.2, 0.2, 0.2, 1
+                    cursor_color: 0.118, 0.235, 0.447, 1
+                    padding: dp(12), dp(10)
+                    on_text_validate: root.send_message()  # Enter envia
+
+                # CSS: #sendBtn
+                Button:
+                    id: send_btn
+                    text: '➤'
+                    font_size: '20sp'
+                    size_hint_x: None
+                    width: dp(48)
+                    background_color: 0.118, 0.235, 0.447, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.send_message()
+
+
+# ════════════════════════════════════════════════════════════
+# RootLayout — container raiz
+# CSS equivalente: .container { display:flex; }
+# ════════════════════════════════════════════════════════════
+<RootLayout>:
+    orientation: 'horizontal'
+
+    # Sidebar principal de navegação
+    NavSidebar:
+
+    # Gerenciador de telas (Home / Chat)
+    ScreenManager:
+        id: screen_manager
+
+        HomeScreen:
+            name: 'home'
+
+        ChatScreen:
+            name: 'chat'
