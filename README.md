@@ -1,250 +1,200 @@
-# 📄 Documentação Técnica — Lionel No IT (MVP)
+# 🤖 Sulivan — Chatbot Institucional UniEVANGÉLICA
 
-**Projeto:** Sulivan — Chatbot Institucional UniEVANGÉLICA  
+**Projeto:** Sulivan 
 **Versão:** MVP (Clean Architecture v2)  
-**Autores:** 
-*Luan Henrique (Martins)*
-*Gabriel Silveira*
-*Marcos*
-*Maria julia*
-*Pedro Augusto*
-*João Victor*
-*Emily Alves*
-
-
-**Data:** Março / 2026  
+**Autores:** Luan Henrique (Martins) · Gabriel Silveira · Marcos · Maria Julia · Pedro Augusto · João Victor · Emily Alves  
+**Data:** Março / 2026
 
 ---
 
-## 1. Visão Geral
+## Visão Geral
 
-O **Sulivan** é um assistente virtual desenvolvido para a **Universidade Evangélica de Goiás (UniEVANGÉLICA)**. Seu objetivo é responder perguntas de alunos sobre horários de aula, cursos disponíveis por campus e informações gerais da instituição, com uma personalidade bem-humorada e acessível.
+O **Sulivan** é um assistente virtual desenvolvido para a **Universidade Evangélica de Goiás (UniEVANGÉLICA)**. Ele responde perguntas de alunos sobre horários de aula, cursos por campus, matérias/disciplinas e informações gerais da instituição — com uma personalidade bem-humorada e um vocabulário que dispensa formalidade.
 
-O sistema combina um **agente baseado em regras** (respostas rápidas e determinísticas) com um **fallback via LLM local** (Ollama), garantindo respostas mesmo para perguntas fora do escopo pré-definido.
+O sistema combina um **motor baseado em regras** (respostas rápidas e determinísticas) com um **fallback via LLM local** (Ollama), garantindo uma resposta para qualquer pergunta — mesmo que seja uma resposta irônica.
+
+O projeto conta com **duas interfaces**:
+- **Web** — dashboard Flask com sidebar de navegação, chat com histórico, e fundo animado de universo no calendário
+- **Mobile** — aplicativo Kivy (`Kivy.py` + `sulivan.kv`), que reutiliza o mesmo serviço de IA do backend
 
 ---
 
-## 2. Arquitetura
-
-O projeto segue os princípios da **Clean Architecture**, separando as responsabilidades em camadas distintas:
+## Estrutura do Projeto
 
 ```
-Layonel_No_IT_CleanArchitecture/
+Sulivan-main/
 │
-├── app.py                        # Camada de entrada — servidor Flask e rotas HTTP
+├── app.py                          # Servidor Flask — rotas HTTP
 │
 ├── services/
-│   ├── ia_service.py             # Camada de aplicação — lógica principal do chat
-│   └── baseado_regras.py         # Camada de domínio — regras, agenda e fallbacks
+│   ├── ia_service.py               # Lógica principal do chat (motor de regras + LLM)
+│   └── baseado_regras.py           # Dados estáticos: agenda, aliases, fallbacks, contadores
 │
 ├── dados/
-│   ├── integração_dados.py       # Carregamento dos dados JSON
-│   ├── institucional.json        # Dados da instituição (missão, visão, história)
-│   ├── cursos.json               # Cursos por campus
-│   ├── professores.json          # Professores
-│   ├── materias.json             # Matérias
-│   ├── secretaria.json           # Dados da secretaria
-│   └── calendario.json           # Calendário acadêmico
+│   ├── integração_dados.py         # Carregamento centralizado dos JSONs
+│   ├── institucional.json          # Missão, visão, história da UniEVANGÉLICA
+│   ├── cursos.json                 # Cursos por campus
+│   ├── materias.json               # Disciplinas por curso
+│   ├── professores.json            # Professores
+│   ├── secretaria.json             # Dados da secretaria
+│   └── calendario.json             # Calendário acadêmico
 │
 ├── templates/
-│   └── index.html                # Frontend da aplicação (chat UI)
+│   ├── index.html                  # Frontend web (Jinja2)
+│   └── sulivan.kv                  # Layout declarativo do app Kivy
+│
+├── static/
+│   ├── app.js                      # Lógica de navegação, chat e animação (frontend)
+│   └── styles.css                  # Estilos do dashboard web (~1400 linhas)
+│
+├── Kivy.py                         # App mobile (Kivy) — reutiliza ia_service diretamente
 │
 └── tests/
-    ├── interface.html            # Interface de teste manual
-    └── test_app.py               # Testes automatizados (unittest)
-```
-
-### Fluxo de uma Requisição
-
-```
-Usuário (browser)
-     │
-     ▼
-  index.html  ──── POST /chat ────▶  app.py (Flask)
-                                          │
-                                          ▼
-                                   ia_service.chat()
-                                          │
-                          ┌───────────────┴───────────────┐
-                          │                               │
-                   Regra encontrada?               Nenhuma regra
-                          │                               │
-                    Responde via                  Tenta LLM (Ollama)
-                   baseado_regras                    gemma3:4b
-                          │                       mistral-nemo:12b
-                          │                               │
-                          │                       Falha? → fallback()
-                          │                               │
-                          └───────────────┬───────────────┘
-                                          │
-                                   JSON de resposta
-                                   { source, resposta }
+    ├── interface.html              # Interface de teste manual (standalone)
+    └── test_app.py                 # Testes automatizados (unittest)
 ```
 
 ---
 
-## 3. Componentes
+## Arquitetura
 
-### 3.1 `app.py` — Servidor Flask
+```
+Usuário (browser ou app Kivy)
+        │
+        ▼
+  index.html / Kivy.py
+        │
+        ├── Web: POST /chat ──────▶ app.py (Flask)
+        │                                │
+        └── Mobile: chamada direta ──────┘
+                                         │
+                                         ▼
+                                  ia_service.chat()
+                                         │
+                         ┌──────────────┴──────────────┐
+                         │                             │
+                   Regra encontrada?             Nenhuma regra
+                         │                             │
+                  baseado_regras                Tenta LLM (Ollama)
+                         │                      gemma3:4b → mistral-nemo:12b
+                         │                             │
+                         │                      Falha? → fallback()
+                         └──────────────┬──────────────┘
+                                        │
+                                 { source, resposta }
+```
 
-Ponto de entrada da aplicação. Define três rotas HTTP:
+---
+
+## Componentes
+
+### `app.py` — Servidor Flask
+
+Ponto de entrada da aplicação web. Expõe três rotas:
 
 | Rota | Método | Descrição |
 |------|--------|-----------|
-| `/` | GET | Serve a interface web (index.html) |
+| `/` | GET | Serve o dashboard (index.html) |
 | `/health` | GET | Healthcheck — retorna `{"status": "ok"}` |
 | `/chat` | POST | Recebe `{"mensagem": "..."}` e retorna a resposta do bot |
 
-**Execução padrão:** host `0.0.0.0`, porta `5000`, modo debug ativo.
+Execução padrão: `host 0.0.0.0`, porta `5000`, modo debug ativo.
 
 ---
 
-### 3.2 `services/baseado_regras.py` — Camada de Domínio
+### `services/ia_service.py` — Motor de Chat
 
-Define os dados estáticos e regras de negócio:
+Contém toda a lógica de processamento de mensagens. A função `chat()` funciona tanto com request HTTP (Flask) quanto com chamada direta por parâmetro (Kivy).
 
-**`agenda`** — Horários de aula por dia da semana (segunda a sábado):
+**Ordem de prioridade no despacho:**
 
-| Dia | Matéria | Professor | Horário | Local |
-|-----|---------|-----------|---------|-------|
-| Segunda | Fundamentos de Engenharia de Dados | Eduardo | 19h–21h50 | Bloco H, Sala 110 |
-| Terça | Fundamentos Matemáticos para Computação | Otoniel | 19h–21h50 | Bloco H, Sala 110 |
-| Quarta | Introdução à Engenharia de Soluções | Henrique Lima | 19h–22h40 | Bloco H, Sala 110 |
-| Quinta | Cidadania, Ética e Espiritualidade | Helehon Santos | 19h–21h40 | Bloco H, Sala 110 |
-| Sexta | Fundamento de Computação e Infraestrutura | Araújo | 19h–21h40 | Bloco H, Sala 110 |
-| Sábado | Leitura e Interpretação de Texto (Online) | Autodidata | Livre | Casa |
+1. **Agenda** — detecta dia da semana e retorna horário, matéria, professor e local
+2. **Criador** — palavra-chave `"criador"` retorna crédito ao autor
+3. **Cursos** — detecta `"curso"` + nome de campus → lista cursos disponíveis
+4. **Matérias** — detecta `"materia"` ou `"disciplina"` + nome do curso → lista disciplinas (online e presenciais)
+5. **Nome** — pergunta sobre o nome do bot (com escalada irônica progressiva)
+6. **Calculadora** — resposta humorística redirecionando o usuário
+7. **Saída** — detecta `"tchau"`, `"sair"`, `"bye"`, `"falou"`
+8. **LLM** — tenta `gemma3:4b`, depois `mistral-nemo:12b` via Ollama
+9. **Fallback** — frase aleatória da lista de respostas irônicas
 
-**`AGENDA_ALIASES`** — Mapa de variações textuais para os dias canônicos (ex.: `"terca"` → `"terça"`).
+Funções auxiliares principais:
 
-**`contadores`** — Dicionário de contadores para rastrear quantas vezes o usuário fez perguntas similares, habilitando respostas progressivamente mais irônicas:
-
-```python
-contadores = { "total": 0, "else": 0, "dia": 0, "meu_nome": 0, "calculadora": 0 }
-```
-
-**`fallback`** — Lista com ~20 respostas humorísticas para perguntas fora do escopo.
-
----
-
-### 3.3 `services/ia_service.py` — Camada de Aplicação
-
-Contém toda a lógica do chat. Funções principais:
-
-#### `chat(mensagem)`
-Função central. Processa a mensagem do usuário e retorna um JSON com:
-- `source`: indica a origem da resposta (`"regras"`, `"llm_small"`, `"llm_big"`, `"fallback"`)
-- `resposta`: texto da resposta
-
-**Lógica de despacho (em ordem de prioridade):**
-
-1. Detecta dia da semana na mensagem → retorna horário da agenda
-2. Detecta palavra-chave `"criador"` → retorna crédito ao autor
-3. Detecta `"curso"` + nome do campus → retorna lista de cursos
-4. Detecta `"nome"` + `"seu"/"qual"` → retorna nome do bot (com escalonamento irônico)
-5. Detecta `"calculadora"` → resposta humorística
-6. Detecta saudações de saída → encerra com estilo
-7. Nenhuma regra matched → tenta LLM via Ollama
-
-#### `call_llm(model, prompt, temperature=0.3)`
-Faz requisição POST para a API local do Ollama (`http://localhost:11434/api/generate`). Timeout de 20 segundos. Retorna o texto gerado pelo modelo.
-
-#### `formatar_cursos(dados, campus)`
-Formata a lista de cursos de um campus específico. Aceita as chaves: `anapolis`, `ceres`, `jaragua`, `rubiataba`, `senador_canedo`, `acdoc`, `capelania`.
-
-#### `normalize_text(text)` e `resolve_day(mensagem)`
-Normalizam e identificam dias da semana na mensagem, removendo acentos para garantir detecção robusta (ex.: "terça" = "terca").
+- `normalize_text(text)` — remove acentos para comparação robusta
+- `resolve_day(mensagem)` — identifica dias da semana na mensagem (com ou sem acento)
+- `formatar_cursos(dados, campus)` — formata lista de cursos de um campus
+- `formatar_materia(dados, curso)` — formata disciplinas online e presenciais de um curso
+- `call_llm(model, prompt)` — faz POST para a API local do Ollama (timeout 20s)
 
 ---
 
-### 3.4 `dados/` — Camada de Dados
+### `services/baseado_regras.py` — Dados Estáticos
 
-Todos os dados são carregados via `integração_dados.py` no startup:
+Define a agenda semanal (segunda a sábado), o mapa de aliases de dias (`"terca"` → `"terça"`), os contadores de ironia por categoria e a lista de ~20 respostas de fallback.
 
-```python
-dados = {
-    "institucional": carregar_json("dados/institucional.json"),
-    "cursos":        carregar_json("dados/cursos.json"),
-    "professores":   carregar_json("dados/professores.json"),
-    "materias":      carregar_json("dados/materias.json"),
-    "secretaria":    carregar_json("dados/secretaria.json"),
-    "calendario":    carregar_json("dados/calendario.json"),
-}
-```
-
-**`institucional.json`** contém: `quem_somos`, `missao`, `visao`, `valores`, `historia` (de 1947 a 2021), `reitoria`, `pro_reitor`, `pro_reitoria_pos_graduacao`.
-
-**`cursos.json`** contém cursos agrupados por campus: Anápolis, Ceres, Jaraguá, Rubiataba, Senador Canedo, além de ACDOC, Capelania, Centro de Línguas, Cursos Livres, Graduação, Pós-Graduação Lato e Stricto Sensu.
+Os contadores habilitam escalada progressiva de ironia: após N perguntas repetidas sobre o mesmo tópico, o bot começa a reclamar.
 
 ---
 
-### 3.5 `templates/index.html` — Frontend
+### `dados/` — Camada de Dados
 
-Interface web do chatbot (single-page, sem framework). Renderizada diretamente pelo Flask via `render_template`.
+Todos os JSONs são carregados no startup via `integração_dados.py`:
 
----
-
-### 3.6 `tests/test_app.py` — Testes Automatizados
-
-Três casos de teste usando `unittest` e o test client do Flask:
-
-| Teste | Descrição |
-|-------|-----------|
-| `test_chat_rejects_empty_message` | Verifica que mensagens vazias retornam HTTP 400 com mensagem de erro |
-| `test_chat_handles_day_without_accent` | Verifica detecção de dia sem acento ("terca") e retorno correto da matéria |
-| `test_healthcheck` | Verifica que `/health` retorna 200 com `{"status": "ok"}` |
+| Arquivo | Conteúdo |
+|---------|----------|
+| `institucional.json` | Missão, visão, valores, história (1947–2021), reitoria |
+| `cursos.json` | Cursos agrupados por campus (Anápolis, Ceres, Jaraguá, Rubiataba, Senador Canedo, ACDOC, Capelania) |
+| `materias.json` | Disciplinas online e presenciais por curso |
+| `professores.json` | Professores (em expansão) |
+| `secretaria.json` | Dados da secretaria (em expansão) |
+| `calendario.json` | Calendário acadêmico |
 
 ---
 
-## 4. Integração com LLM (Ollama)
+### Frontend Web (`templates/` + `static/`)
 
-Quando nenhuma regra pré-definida cobre a pergunta, o sistema tenta dois modelos em cascata:
+Dashboard single-page servido pelo Flask, com navegação por sidebar. Os assets foram refatorados do `index.html` monolítico para arquivos separados servidos via `url_for('static', ...)`.
 
-| Ordem | Modelo | Source tag |
-|-------|--------|------------|
-| 1º | `gemma3:4b` (leve) | `llm_small` |
-| 2º | `mistral-nemo:12b` (robusto) | `llm_big` |
-| Fallback | Frase aleatória da lista | `fallback` |
+**`static/app.js`** — organizado em módulos JavaScript:
+- `Utils` — funções utilitárias (hora, data, escape HTML, geração de ID de sessão)
+- `app` — navegação entre views, setup de event listeners
+- `chat` — envio de mensagens, renderização de bolhas, histórico de conversas, toggle da sidebar
+- `universe` — animação canvas do fundo do Calendário (estrelas, planetas, paralaxe com mouse)
 
-O prompt enviado ao LLM instrui o modelo a se comportar como "Lionel No IT", proibindo a invenção de dados institucionais e orientando o usuário a procurar a secretaria quando necessário.
+**`static/styles.css`** — ~1400 linhas cobrindo layout do dashboard, tema dark, sidebar, chat, animações e responsividade.
 
-**Requisito:** Ollama rodando localmente na porta `11434` com os modelos baixados.
-
----
-
-## 5. Como Executar
-
-### Pré-requisitos
-
-- Python 3.10+
-- Flask, requests, markdown (instalar via pip)
-- Ollama instalado e rodando (para o fallback LLM)
-
-### Instalação
-
-```bash
-pip install flask requests markdown
-```
-
-### Executar
-
-```bash
-cd Layonel_No_IT_CleanArchitecture
-python app.py
-```
-
-Acesse em: `http://localhost:5000`
-
-### Testes
-
-```bash
-python -m pytest tests/test_app.py -v
-# ou
-python tests/test_app.py
-```
+**Views disponíveis:**
+- **Início** — boas-vindas, widget flutuante de mini-chat (só aparece nessa view)
+- **Calendário** — fundo animado de universo com canvas, planetas e paralaxe
+- **Chat** — interface completa com histórico de sessões na sidebar, bolhas de mensagem e input
 
 ---
 
-## 6. Formato das Respostas da API
+### `Kivy.py` + `templates/sulivan.kv` — App Mobile
+
+Versão mobile do Sulivan em Kivy, com:
+- `NavigationDrawer` — sidebar de navegação
+- `ScreenManager` — alternância entre telas Home e Chat
+- `MessageRow` — widget de bolha de mensagem (equivalente ao `.message-row` do HTML)
+- `UrlRequest` — chamada assíncrona ao backend Flask (equivalente ao `fetch()` do JS)
+
+O `Kivy.py` também suporta chamada direta ao `ia_service.chat()` sem passar pelo HTTP, útil para rodar sem o servidor Flask ativo.
+
+---
+
+### `tests/test_app.py` — Testes Automatizados
+
+Três casos de teste com `unittest` e o test client do Flask:
+
+| Teste | O que verifica |
+|-------|----------------|
+| `test_chat_rejects_empty_message` | Mensagens vazias retornam HTTP 400 com `{"erro": "..."}` |
+| `test_chat_handles_day_without_accent` | `"terca"` (sem acento) é detectado corretamente e retorna a matéria certa |
+| `test_healthcheck` | `/health` retorna 200 com `{"status": "ok"}` |
+
+---
+
+## API
 
 **POST `/chat`**
 
@@ -271,30 +221,86 @@ Response (LLM):
 
 Response (erro):
 ```json
-{
-  "erro": "Informe uma mensagem válida."
-}
+{ "erro": "Informe uma mensagem válida." }
+```
+
+O campo `source` pode ser: `"regras"`, `"llm_small"`, `"llm_big"` ou `"fallback"`.
+
+---
+
+## Como Executar
+
+### Pré-requisitos
+
+- Python 3.10+
+- Ollama instalado e rodando (necessário apenas para o fallback LLM)
+
+### Instalação
+
+```bash
+pip install flask requests markdown
+```
+
+Para o app mobile:
+```bash
+pip install kivy
+```
+
+### Rodar o servidor web
+
+```bash
+python app.py
+```
+
+Acesse em: `http://localhost:5000`
+
+### Rodar o app Kivy
+
+```bash
+python Kivy.py
+```
+
+### Rodar os testes
+
+```bash
+python -m pytest tests/test_app.py -v
+# ou
+python tests/test_app.py
 ```
 
 ---
 
-## 7. Limitações do MVP
+## LLM (Ollama)
 
-- A agenda é **estática** — codificada diretamente no `baseado_regras.py`. Qualquer mudança de horário exige edição manual do código.
-- Os contadores de ironia são **em memória** — reiniciam a cada restart do servidor.
-- O fallback LLM depende do **Ollama local** — sem ele, o bot só funciona para perguntas cobertas pelas regras.
-- O campo `professores.json` e `secretaria.json` estão vazios/mínimos no MVP.
-- A função `chat()` em `ia_service.py` chama `request.get_json()` internamente, **duplicando** o parse que já acontece em `app.py` — isso é um ponto de refatoração.
+Quando nenhuma regra cobre a pergunta, o sistema tenta dois modelos em cascata:
+
+| Ordem | Modelo | Source tag |
+|-------|--------|------------|
+| 1º | `gemma3:4b` (leve) | `llm_small` |
+| 2º | `mistral-nemo:12b` (robusto) | `llm_big` |
+| Fallback | Frase aleatória | `fallback` |
+
+O prompt instrui o modelo a se comportar como "Lionel No IT", proibindo invenção de dados institucionais e orientando o usuário a procurar a secretaria quando necessário.
+
+**Requisito:** Ollama rodando localmente na porta `11434` com os modelos baixados.
+
+---
+
+## Limitações do MVP
+
+- A agenda é **estática** — codificada no `baseado_regras.py`. Mudanças de horário exigem edição manual do código.
+- Os contadores de ironia ficam **em memória** — reiniciam a cada restart do servidor.
+- O fallback LLM exige o **Ollama local** rodando. Sem ele, só funcionam as regras pré-definidas.
+- `professores.json` e `secretaria.json` estão mínimos no MVP.
+- Não há `requirements.txt` ainda.
 
 ---
 
-## 8. Melhorias Sugeridas
+## Melhorias Sugeridas
 
-- Externalizar a agenda para um arquivo JSON ou banco de dados, eliminando edições de código para atualizações.
-- Persistir os contadores em Redis ou banco para manter o estado entre restarts.
-- Adicionar autenticação simples na rota `/chat` para evitar uso indevido.
-- Separar a lógica de `request.get_json()` do `ia_service`, mantendo o service agnóstico ao framework HTTP.
-- Ampliar os testes para cobrir os casos de cursos por campus e fallback LLM (com mock).
-- Criar um `requirements.txt` para facilitar o setup.
-
----
+- Externalizar a agenda para um JSON ou banco de dados, eliminando edições de código para atualizações.
+- Persistir contadores em Redis para manter estado entre restarts.
+- Criar `requirements.txt` para facilitar o setup.
+- Separar o parse de `request.get_json()` do `ia_service`, mantendo o service agnóstico ao framework HTTP.
+- Ampliar os testes para cobrir cursos por campus e fallback LLM (com mock).
+- Adicionar autenticação simples na rota `/chat`.
