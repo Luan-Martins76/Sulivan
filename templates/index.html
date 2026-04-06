@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sulivan - Painel de Controle</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        #view-section-banner {
+            position: relative;
+        }
+        .cal-card-wrap {
+            position: absolute;
+            text-decoration: none;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -22,7 +32,7 @@
                 <li><a href="#chat" onclick="app.switchView('chat', this); return false;"><i>🤖</i> Chat</a></li>
                 <li class="menu-divider" role="separator"></li>
                 <li><a href="#config"><i>⚙️</i> Configurações</a></li>
-                <li><a href="#perfil"><i>👤</i> Perfil</a></li>
+                <li><a href="#perfil" onclick="app.switchView('login', this); return false;"><i>👤</i> Perfil</a></li>
                 <li><a href="#sair"><i>📤</i> Sair</a></li>
             </ul>
         </nav>
@@ -33,6 +43,17 @@
         <section id="view-home" class="view-section active" aria-labelledby="home-title">
             <h1 id="home-title">Bem-vindo ao Sulivan</h1>
             <p>Selecione o menu "Chat" para iniciar uma conversa.</p>
+            <iframe 
+              src="{{ url_for('static', filename='front_secundarios/animacao110porcentonecessaria.html') }}"
+              style="position:absolute; inset:0; width:100%; height:100%; border:none;">
+            </iframe>
+        </section>
+
+        <section id="view-login" class="view-section" ariel-label="Área login">
+          <iframe
+            src="{{ url_for('static', filename='front_secundarios/login.html') }}"
+            style="position:absolute; inset:0; width:100%; height:100%; border:none;">
+          </iframe>
         </section>
 
         <section id="view-chat" class="view-section" aria-label="Área de Chat">
@@ -75,8 +96,60 @@
 
           <div class="overlay-text">
             <h1>CALENDÁRIO</h1>
-            <p>Mova o mouse para explorar a profundidade</p>
+            <p>Navegue pelos campus 🚀</p>
           </div>
+
+
+          <!-- ── Cards de navegação rápida ── -->
+          <a class="cal-card-wrap" style="top: 8%; right: 4%;" href="https://aplicacao.unievangelica.edu.br/uploads/ProACAD/calendarios20261/Calendário-Uni-Anapolis-20261.pdf" target="_blank">
+            <div class="card_calendario">
+              <div class="card-image-container">
+                <img src="{{ url_for('static', filename='imagem/anapolis.png') }}" alt="Uni-Anápolis">
+              </div>
+              <p class="card-title">Uni-Anápolis</p>
+              <p class="card-des">Sempre ao seu lado</p>
+            </div>
+          </a>
+
+          <a class="cal-card-wrap" style="top: 42%; left: 4%;" href="https://aplicacao.unievangelica.edu.br/uploads/ProACAD/calendarios20261/Calendário-Uni-Ceres-20261.pdf" target="_blank">
+            <div class="card_calendario">
+              <div class="card-image-container">
+                <img src="{{ url_for('static', filename='imagem/ceres.png') }}" alt="Uni-Ceres">
+              </div>
+              <p class="card-title">Uni-Ceres</p>
+              <p class="card-des">Trabalhando por você</p>
+            </div>
+          </a>
+
+          <a class="cal-card-wrap" style="bottom: 8%; left: 18%;" href="https://aplicacao.unievangelica.edu.br/uploads/ProACAD/calendarios20261/Calendário-Uni-Jaragua.pdf" target="_blank">
+            <div class="card_calendario">
+              <div class="card-image-container">
+                <img src="{{ url_for('static', filename='imagem/jaragua.png') }}" alt="Uni-Jaragua">
+              </div>
+              <p class="card-title">Uni-Jaraguá</p>
+              <p class="card-des">Acompanhando seu desenvolvimento</p>
+            </div>
+          </a>
+
+          <a class="cal-card-wrap" style="bottom: 8%; left: 50%; transform: translateX(-50%);" href="https://aplicacao.unievangelica.edu.br/uploads/ProACAD/calendarios20261/Calendário-Uni-Rubiataba-20261.pdf" target="_blank">
+            <div class="card_calendario">
+              <div class="card-image-container">
+                <img src="{{ url_for('static', filename='imagem/rubiataba.png') }}" alt="Uni-Rubiataba">
+              </div>
+              <p class="card-title">Uni-Rubiataba</p>
+              <p class="card-des">No coração da Rainha do Vale</p>
+            </div>
+          </a>
+
+          <a class="cal-card-wrap" style="bottom: 8%; right: 10%;" href="https://aplicacao.unievangelica.edu.br/uploads/ProACAD/calendarios20261/Calendário-Uni-Senador-Canedo.pdf" target="_blank">
+            <div class="card_calendario">
+              <div class="card-image-container">
+                <img src="{{ url_for('static', filename='imagem/senador_canedo.png') }}" alt="Uni-Anápolis">
+              </div>
+              <p class="card-title">Uni-Senador Canedo</p>
+              <p class="card-des">Evoluindo com você a cada dia</p>
+            </div>
+          </a>
 
           <div class="section-banner">
             <div id="star-1">
@@ -373,6 +446,6 @@
   </li>
 </ul>
 
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

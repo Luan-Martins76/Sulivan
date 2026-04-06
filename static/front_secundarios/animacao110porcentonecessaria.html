@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href= "../css/binaria.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+  
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+<div class="spinning-number">
+  <div
+    style="color:hwb(240 0% 0%);--l:3em;--m:22;--t:22s;--r1:normal;--s:1"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0" class="number"></div>
+    <div style="--a:16deg;--i:1;--r:reverse" class="number"></div>
+    <div style="--a:32deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:49deg;--i:3" class="number"></div>
+    <div style="--a:65deg;--i:4;--r:reverse" class="number"></div>
+    <div style="--a:81deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:98deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:114deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:130deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:147deg;--i:9" class="number"></div>
+    <div style="--a:163deg;--i:10;--r:reverse" class="number"></div>
+    <div style="--a:180deg;--i:11" class="number"></div>
+    <div style="--a:196deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:212deg;--i:13" class="number"></div>
+    <div style="--a:229deg;--i:14" class="number"></div>
+    <div style="--a:245deg;--i:15" class="number"></div>
+    <div style="--a:261deg;--i:16;--r:reverse" class="number"></div>
+    <div style="--a:278deg;--i:17" class="number"></div>
+    <div style="--a:294deg;--i:18;--r:reverse" class="number"></div>
+    <div style="--a:310deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:327deg;--i:20" class="number"></div>
+    <div style="--a:343deg;--i:21;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(243 0% 0%);--l:4em;--m:29;--t:29s;--r1:reverse;--s:0.9977810650887574"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0" class="number"></div>
+    <div style="--a:12deg;--i:1" class="number"></div>
+    <div style="--a:24deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:37deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:49deg;--i:4;--r:reverse" class="number"></div>
+    <div style="--a:62deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:74deg;--i:6" class="number"></div>
+    <div style="--a:86deg;--i:7" class="number"></div>
+    <div style="--a:99deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:111deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:124deg;--i:10" class="number"></div>
+    <div style="--a:136deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:148deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:161deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:173deg;--i:14" class="number"></div>
+    <div style="--a:186deg;--i:15" class="number"></div>
+    <div style="--a:198deg;--i:16;--r:reverse" class="number"></div>
+    <div style="--a:211deg;--i:17" class="number"></div>
+    <div style="--a:223deg;--i:18" class="number"></div>
+    <div style="--a:235deg;--i:19" class="number"></div>
+    <div style="--a:248deg;--i:20" class="number"></div>
+    <div style="--a:260deg;--i:21;--r:reverse" class="number"></div>
+    <div style="--a:273deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:285deg;--i:23" class="number"></div>
+    <div style="--a:297deg;--i:24;--r:reverse" class="number"></div>
+    <div style="--a:310deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:322deg;--i:26;--r:reverse" class="number"></div>
+    <div style="--a:335deg;--i:27" class="number"></div>
+    <div style="--a:347deg;--i:28;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(247 0% 0%);--l:5em;--m:36;--t:36s;--r1:reverse;--s:0.9911242603550295"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0" class="number"></div>
+    <div style="--a:10deg;--i:1" class="number"></div>
+    <div style="--a:20deg;--i:2" class="number"></div>
+    <div style="--a:29deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:40deg;--i:4" class="number"></div>
+    <div style="--a:50deg;--i:5" class="number"></div>
+    <div style="--a:59deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:70deg;--i:7" class="number"></div>
+    <div style="--a:80deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:90deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:100deg;--i:10" class="number"></div>
+    <div style="--a:110deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:119deg;--i:12" class="number"></div>
+    <div style="--a:130deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:140deg;--i:14" class="number"></div>
+    <div style="--a:150deg;--i:15" class="number"></div>
+    <div style="--a:160deg;--i:16;--r:reverse" class="number"></div>
+    <div style="--a:170deg;--i:17;--r:reverse" class="number"></div>
+    <div style="--a:180deg;--i:18" class="number"></div>
+    <div style="--a:190deg;--i:19" class="number"></div>
+    <div style="--a:200deg;--i:20" class="number"></div>
+    <div style="--a:209deg;--i:21;--r:reverse" class="number"></div>
+    <div style="--a:220deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:229deg;--i:23;--r:reverse" class="number"></div>
+    <div style="--a:239deg;--i:24" class="number"></div>
+    <div style="--a:249deg;--i:25" class="number"></div>
+    <div style="--a:260deg;--i:26;--r:reverse" class="number"></div>
+    <div style="--a:270deg;--i:27;--r:reverse" class="number"></div>
+    <div style="--a:280deg;--i:28" class="number"></div>
+    <div style="--a:290deg;--i:29;--r:reverse" class="number"></div>
+    <div style="--a:300deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:310deg;--i:31" class="number"></div>
+    <div style="--a:320deg;--i:32" class="number"></div>
+    <div style="--a:329deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:340deg;--i:34" class="number"></div>
+    <div style="--a:350deg;--i:35;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(251 0% 0%);--l:6em;--m:44;--t:44s;--r1:reverse;--s:0.9800295857988166"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0;--r:reverse" class="number"></div>
+    <div style="--a:8deg;--i:1" class="number"></div>
+    <div style="--a:24deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:49deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:57deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:65deg;--i:8" class="number"></div>
+    <div style="--a:73deg;--i:9" class="number"></div>
+    <div style="--a:81deg;--i:10;--r:reverse" class="number"></div>
+    <div style="--a:90deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:98deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:106deg;--i:13" class="number"></div>
+    <div style="--a:114deg;--i:14" class="number"></div>
+    <div style="--a:122deg;--i:15" class="number"></div>
+    <div style="--a:130deg;--i:16" class="number"></div>
+    <div style="--a:139deg;--i:17;--r:reverse" class="number"></div>
+    <div style="--a:147deg;--i:18;--r:reverse" class="number"></div>
+    <div style="--a:155deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:163deg;--i:20;--r:reverse" class="number"></div>
+    <div style="--a:171deg;--i:21" class="number"></div>
+    <div style="--a:180deg;--i:22" class="number"></div>
+    <div style="--a:188deg;--i:23" class="number"></div>
+    <div style="--a:196deg;--i:24" class="number"></div>
+    <div style="--a:204deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:212deg;--i:26" class="number"></div>
+    <div style="--a:220deg;--i:27" class="number"></div>
+    <div style="--a:229deg;--i:28;--r:reverse" class="number"></div>
+    <div style="--a:237deg;--i:29;--r:reverse" class="number"></div>
+    <div style="--a:245deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:253deg;--i:31;--r:reverse" class="number"></div>
+    <div style="--a:261deg;--i:32;--r:reverse" class="number"></div>
+    <div style="--a:270deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:278deg;--i:34" class="number"></div>
+    <div style="--a:286deg;--i:35;--r:reverse" class="number"></div>
+    <div style="--a:294deg;--i:36" class="number"></div>
+    <div style="--a:302deg;--i:37;--r:reverse" class="number"></div>
+    <div style="--a:310deg;--i:38;--r:reverse" class="number"></div>
+    <div style="--a:319deg;--i:39;--r:reverse" class="number"></div>
+    <div style="--a:327deg;--i:40" class="number"></div>
+    <div style="--a:335deg;--i:41" class="number"></div>
+    <div style="--a:343deg;--i:42;--r:reverse" class="number"></div>
+    <div style="--a:351deg;--i:43" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(255 0% 0%);--l:7em;--m:51;--t:51s;--r1:normal;--s:0.9644970414201184"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0;--r:reverse" class="number"></div>
+    <div style="--a:7deg;--i:1;--r:reverse" class="number"></div>
+    <div style="--a:14deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:21deg;--i:3" class="number"></div>
+    <div style="--a:28deg;--i:4;--r:reverse" class="number"></div>
+    <div style="--a:35deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:42deg;--i:6" class="number"></div>
+    <div style="--a:49deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:56deg;--i:8" class="number"></div>
+    <div style="--a:63deg;--i:9" class="number"></div>
+    <div style="--a:70deg;--i:10" class="number"></div>
+    <div style="--a:77deg;--i:11" class="number"></div>
+    <div style="--a:84deg;--i:12" class="number"></div>
+    <div style="--a:91deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:98deg;--i:14;--r:reverse" class="number"></div>
+    <div style="--a:105deg;--i:15" class="number"></div>
+    <div style="--a:112deg;--i:16" class="number"></div>
+    <div style="--a:119deg;--i:17;--r:reverse" class="number"></div>
+    <div style="--a:127deg;--i:18;--r:reverse" class="number"></div>
+    <div style="--a:134deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:148deg;--i:21;--r:reverse" class="number"></div>
+    <div style="--a:155deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:162deg;--i:23" class="number"></div>
+    <div style="--a:169deg;--i:24;--r:reverse" class="number"></div>
+    <div style="--a:176deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:183deg;--i:26;--r:reverse" class="number"></div>
+    <div style="--a:190deg;--i:27;--r:reverse" class="number"></div>
+    <div style="--a:197deg;--i:28;--r:reverse" class="number"></div>
+    <div style="--a:204deg;--i:29;--r:reverse" class="number"></div>
+    <div style="--a:211deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:218deg;--i:31;--r:reverse" class="number"></div>
+    <div style="--a:225deg;--i:32;--r:reverse" class="number"></div>
+    <div style="--a:232deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:239deg;--i:34;--r:reverse" class="number"></div>
+    <div style="--a:247deg;--i:35;--r:reverse" class="number"></div>
+    <div style="--a:254deg;--i:36" class="number"></div>
+    <div style="--a:261deg;--i:37" class="number"></div>
+    <div style="--a:268deg;--i:38;--r:reverse" class="number"></div>
+    <div style="--a:275deg;--i:39" class="number"></div>
+    <div style="--a:282deg;--i:40;--r:reverse" class="number"></div>
+    <div style="--a:296deg;--i:42;--r:reverse" class="number"></div>
+    <div style="--a:310deg;--i:44;--r:reverse" class="number"></div>
+    <div style="--a:317deg;--i:45" class="number"></div>
+    <div style="--a:324deg;--i:46" class="number"></div>
+    <div style="--a:331deg;--i:47" class="number"></div>
+    <div style="--a:338deg;--i:48" class="number"></div>
+    <div style="--a:345deg;--i:49;--r:reverse" class="number"></div>
+    <div style="--a:352deg;--i:50" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(259 0% 0%);--l:8em;--m:59;--t:59s;--r1:normal;--s:0.9445266272189349"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0;--r:reverse" class="number"></div>
+    <div style="--a:6deg;--i:1" class="number"></div>
+    <div style="--a:12deg;--i:2" class="number"></div>
+    <div style="--a:18deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:24deg;--i:4" class="number"></div>
+    <div style="--a:30deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:36deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:54deg;--i:9" class="number"></div>
+    <div style="--a:61deg;--i:10" class="number"></div>
+    <div style="--a:67deg;--i:11" class="number"></div>
+    <div style="--a:73deg;--i:12" class="number"></div>
+    <div style="--a:79deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:85deg;--i:14;--r:reverse" class="number"></div>
+    <div style="--a:91deg;--i:15;--r:reverse" class="number"></div>
+    <div style="--a:103deg;--i:17" class="number"></div>
+    <div style="--a:115deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:122deg;--i:20;--r:reverse" class="number"></div>
+    <div style="--a:128deg;--i:21" class="number"></div>
+    <div style="--a:134deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:140deg;--i:23" class="number"></div>
+    <div style="--a:146deg;--i:24" class="number"></div>
+    <div style="--a:152deg;--i:25" class="number"></div>
+    <div style="--a:164deg;--i:27" class="number"></div>
+    <div style="--a:170deg;--i:28" class="number"></div>
+    <div style="--a:176deg;--i:29" class="number"></div>
+    <div style="--a:183deg;--i:30" class="number"></div>
+    <div style="--a:189deg;--i:31;--r:reverse" class="number"></div>
+    <div style="--a:195deg;--i:32;--r:reverse" class="number"></div>
+    <div style="--a:201deg;--i:33" class="number"></div>
+    <div style="--a:207deg;--i:34;--r:reverse" class="number"></div>
+    <div style="--a:213deg;--i:35;--r:reverse" class="number"></div>
+    <div style="--a:219deg;--i:36" class="number"></div>
+    <div style="--a:231deg;--i:38" class="number"></div>
+    <div style="--a:237deg;--i:39" class="number"></div>
+    <div style="--a:244deg;--i:40;--r:reverse" class="number"></div>
+    <div style="--a:250deg;--i:41;--r:reverse" class="number"></div>
+    <div style="--a:256deg;--i:42" class="number"></div>
+    <div style="--a:262deg;--i:43;--r:reverse" class="number"></div>
+    <div style="--a:268deg;--i:44;--r:reverse" class="number"></div>
+    <div style="--a:274deg;--i:45;--r:reverse" class="number"></div>
+    <div style="--a:280deg;--i:46;--r:reverse" class="number"></div>
+    <div style="--a:292deg;--i:48" class="number"></div>
+    <div style="--a:298deg;--i:49" class="number"></div>
+    <div style="--a:311deg;--i:51" class="number"></div>
+    <div style="--a:317deg;--i:52;--r:reverse" class="number"></div>
+    <div style="--a:323deg;--i:53;--r:reverse" class="number"></div>
+    <div style="--a:329deg;--i:54" class="number"></div>
+    <div style="--a:335deg;--i:55;--r:reverse" class="number"></div>
+    <div style="--a:341deg;--i:56;--r:reverse" class="number"></div>
+    <div style="--a:347deg;--i:57;--r:reverse" class="number"></div>
+    <div style="--a:353deg;--i:58;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(263 0% 0%);--l:9em;--m:66;--t:66s;--r1:normal;--s:0.9201183431952662"
+    class="wheel"
+  >
+    <div style="--a:5deg;--i:1" class="number"></div>
+    <div style="--a:10deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:16deg;--i:3" class="number"></div>
+    <div style="--a:21deg;--i:4;--r:reverse" class="number"></div>
+    <div style="--a:27deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:32deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:38deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:43deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:49deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:54deg;--i:10;--r:reverse" class="number"></div>
+    <div style="--a:59deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:65deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:70deg;--i:13" class="number"></div>
+    <div style="--a:76deg;--i:14" class="number"></div>
+    <div style="--a:81deg;--i:15;--r:reverse" class="number"></div>
+    <div style="--a:87deg;--i:16" class="number"></div>
+    <div style="--a:92deg;--i:17" class="number"></div>
+    <div style="--a:103deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:109deg;--i:20;--r:reverse" class="number"></div>
+    <div style="--a:114deg;--i:21" class="number"></div>
+    <div style="--a:119deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:130deg;--i:24" class="number"></div>
+    <div style="--a:136deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:141deg;--i:26;--r:reverse" class="number"></div>
+    <div style="--a:147deg;--i:27;--r:reverse" class="number"></div>
+    <div style="--a:152deg;--i:28;--r:reverse" class="number"></div>
+    <div style="--a:158deg;--i:29" class="number"></div>
+    <div style="--a:163deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:169deg;--i:31;--r:reverse" class="number"></div>
+    <div style="--a:180deg;--i:33" class="number"></div>
+    <div style="--a:185deg;--i:34;--r:reverse" class="number"></div>
+    <div style="--a:190deg;--i:35" class="number"></div>
+    <div style="--a:196deg;--i:36" class="number"></div>
+    <div style="--a:207deg;--i:38;--r:reverse" class="number"></div>
+    <div style="--a:212deg;--i:39;--r:reverse" class="number"></div>
+    <div style="--a:218deg;--i:40;--r:reverse" class="number"></div>
+    <div style="--a:223deg;--i:41;--r:reverse" class="number"></div>
+    <div style="--a:234deg;--i:43;--r:reverse" class="number"></div>
+    <div style="--a:239deg;--i:44;--r:reverse" class="number"></div>
+    <div style="--a:245deg;--i:45" class="number"></div>
+    <div style="--a:250deg;--i:46;--r:reverse" class="number"></div>
+    <div style="--a:256deg;--i:47" class="number"></div>
+    <div style="--a:272deg;--i:50;--r:reverse" class="number"></div>
+    <div style="--a:283deg;--i:52" class="number"></div>
+    <div style="--a:289deg;--i:53;--r:reverse" class="number"></div>
+    <div style="--a:294deg;--i:54" class="number"></div>
+    <div style="--a:299deg;--i:55;--r:reverse" class="number"></div>
+    <div style="--a:305deg;--i:56" class="number"></div>
+    <div style="--a:310deg;--i:57;--r:reverse" class="number"></div>
+    <div style="--a:321deg;--i:59;--r:reverse" class="number"></div>
+    <div style="--a:327deg;--i:60" class="number"></div>
+    <div style="--a:338deg;--i:62;--r:reverse" class="number"></div>
+    <div style="--a:343deg;--i:63;--r:reverse" class="number"></div>
+    <div style="--a:349deg;--i:64;--r:reverse" class="number"></div>
+    <div style="--a:354deg;--i:65" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(266 0% 0%);--l:10em;--m:73;--t:73s;--r1:reverse;--s:0.8912721893491125"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0" class="number"></div>
+    <div style="--a:4deg;--i:1;--r:reverse" class="number"></div>
+    <div style="--a:9deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:14deg;--i:3" class="number"></div>
+    <div style="--a:19deg;--i:4" class="number"></div>
+    <div style="--a:24deg;--i:5" class="number"></div>
+    <div style="--a:29deg;--i:6" class="number"></div>
+    <div style="--a:34deg;--i:7" class="number"></div>
+    <div style="--a:39deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:44deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:49deg;--i:10" class="number"></div>
+    <div style="--a:54deg;--i:11" class="number"></div>
+    <div style="--a:59deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:64deg;--i:13" class="number"></div>
+    <div style="--a:69deg;--i:14;--r:reverse" class="number"></div>
+    <div style="--a:73deg;--i:15" class="number"></div>
+    <div style="--a:78deg;--i:16;--r:reverse" class="number"></div>
+    <div style="--a:83deg;--i:17" class="number"></div>
+    <div style="--a:88deg;--i:18" class="number"></div>
+    <div style="--a:93deg;--i:19" class="number"></div>
+    <div style="--a:113deg;--i:23" class="number"></div>
+    <div style="--a:118deg;--i:24" class="number"></div>
+    <div style="--a:123deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:128deg;--i:26" class="number"></div>
+    <div style="--a:133deg;--i:27" class="number"></div>
+    <div style="--a:147deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:152deg;--i:31" class="number"></div>
+    <div style="--a:157deg;--i:32" class="number"></div>
+    <div style="--a:162deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:167deg;--i:34" class="number"></div>
+    <div style="--a:172deg;--i:35" class="number"></div>
+    <div style="--a:187deg;--i:38;--r:reverse" class="number"></div>
+    <div style="--a:192deg;--i:39" class="number"></div>
+    <div style="--a:197deg;--i:40" class="number"></div>
+    <div style="--a:202deg;--i:41" class="number"></div>
+    <div style="--a:212deg;--i:43" class="number"></div>
+    <div style="--a:221deg;--i:45;--r:reverse" class="number"></div>
+    <div style="--a:236deg;--i:48" class="number"></div>
+    <div style="--a:241deg;--i:49" class="number"></div>
+    <div style="--a:246deg;--i:50;--r:reverse" class="number"></div>
+    <div style="--a:256deg;--i:52;--r:reverse" class="number"></div>
+    <div style="--a:261deg;--i:53" class="number"></div>
+    <div style="--a:276deg;--i:56;--r:reverse" class="number"></div>
+    <div style="--a:281deg;--i:57;--r:reverse" class="number"></div>
+    <div style="--a:286deg;--i:58" class="number"></div>
+    <div style="--a:290deg;--i:59;--r:reverse" class="number"></div>
+    <div style="--a:295deg;--i:60" class="number"></div>
+    <div style="--a:300deg;--i:61" class="number"></div>
+    <div style="--a:310deg;--i:63;--r:reverse" class="number"></div>
+    <div style="--a:315deg;--i:64;--r:reverse" class="number"></div>
+    <div style="--a:320deg;--i:65" class="number"></div>
+    <div style="--a:325deg;--i:66;--r:reverse" class="number"></div>
+    <div style="--a:335deg;--i:68" class="number"></div>
+    <div style="--a:340deg;--i:69" class="number"></div>
+    <div style="--a:350deg;--i:71;--r:reverse" class="number"></div>
+    <div style="--a:355deg;--i:72;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(270 0% 0%);--l:11em;--m:81;--t:81s;--r1:reverse;--s:0.8579881656804733"
+    class="wheel"
+  >
+    <div style="--a:0deg;--i:0" class="number"></div>
+    <div style="--a:4deg;--i:1" class="number"></div>
+    <div style="--a:8deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:13deg;--i:3" class="number"></div>
+    <div style="--a:22deg;--i:5" class="number"></div>
+    <div style="--a:26deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:31deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:35deg;--i:8" class="number"></div>
+    <div style="--a:40deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:44deg;--i:10" class="number"></div>
+    <div style="--a:48deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:53deg;--i:12" class="number"></div>
+    <div style="--a:62deg;--i:14;--r:reverse" class="number"></div>
+    <div style="--a:66deg;--i:15;--r:reverse" class="number"></div>
+    <div style="--a:71deg;--i:16;--r:reverse" class="number"></div>
+    <div style="--a:75deg;--i:17;--r:reverse" class="number"></div>
+    <div style="--a:80deg;--i:18;--r:reverse" class="number"></div>
+    <div style="--a:84deg;--i:19" class="number"></div>
+    <div style="--a:93deg;--i:21" class="number"></div>
+    <div style="--a:97deg;--i:22" class="number"></div>
+    <div style="--a:102deg;--i:23" class="number"></div>
+    <div style="--a:106deg;--i:24;--r:reverse" class="number"></div>
+    <div style="--a:111deg;--i:25" class="number"></div>
+    <div style="--a:115deg;--i:26" class="number"></div>
+    <div style="--a:119deg;--i:27" class="number"></div>
+    <div style="--a:124deg;--i:28" class="number"></div>
+    <div style="--a:128deg;--i:29;--r:reverse" class="number"></div>
+    <div style="--a:137deg;--i:31;--r:reverse" class="number"></div>
+    <div style="--a:142deg;--i:32" class="number"></div>
+    <div style="--a:146deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:151deg;--i:34" class="number"></div>
+    <div style="--a:155deg;--i:35" class="number"></div>
+    <div style="--a:160deg;--i:36" class="number"></div>
+    <div style="--a:164deg;--i:37" class="number"></div>
+    <div style="--a:168deg;--i:38" class="number"></div>
+    <div style="--a:173deg;--i:39" class="number"></div>
+    <div style="--a:177deg;--i:40;--r:reverse" class="number"></div>
+    <div style="--a:182deg;--i:41;--r:reverse" class="number"></div>
+    <div style="--a:200deg;--i:45" class="number"></div>
+    <div style="--a:208deg;--i:47;--r:reverse" class="number"></div>
+    <div style="--a:217deg;--i:49" class="number"></div>
+    <div style="--a:222deg;--i:50" class="number"></div>
+    <div style="--a:226deg;--i:51" class="number"></div>
+    <div style="--a:231deg;--i:52;--r:reverse" class="number"></div>
+    <div style="--a:235deg;--i:53" class="number"></div>
+    <div style="--a:239deg;--i:54;--r:reverse" class="number"></div>
+    <div style="--a:244deg;--i:55" class="number"></div>
+    <div style="--a:248deg;--i:56" class="number"></div>
+    <div style="--a:257deg;--i:58" class="number"></div>
+    <div style="--a:262deg;--i:59" class="number"></div>
+    <div style="--a:266deg;--i:60;--r:reverse" class="number"></div>
+    <div style="--a:271deg;--i:61" class="number"></div>
+    <div style="--a:284deg;--i:64;--r:reverse" class="number"></div>
+    <div style="--a:297deg;--i:67" class="number"></div>
+    <div style="--a:302deg;--i:68" class="number"></div>
+    <div style="--a:306deg;--i:69;--r:reverse" class="number"></div>
+    <div style="--a:311deg;--i:70;--r:reverse" class="number"></div>
+    <div style="--a:315deg;--i:71" class="number"></div>
+    <div style="--a:320deg;--i:72;--r:reverse" class="number"></div>
+    <div style="--a:324deg;--i:73" class="number"></div>
+    <div style="--a:328deg;--i:74;--r:reverse" class="number"></div>
+    <div style="--a:333deg;--i:75;--r:reverse" class="number"></div>
+    <div style="--a:337deg;--i:76" class="number"></div>
+    <div style="--a:342deg;--i:77;--r:reverse" class="number"></div>
+    <div style="--a:346deg;--i:78;--r:reverse" class="number"></div>
+    <div style="--a:351deg;--i:79;--r:reverse" class="number"></div>
+    <div style="--a:355deg;--i:80" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(274 0% 0%);--l:12em;--m:88;--t:88s;--r1:normal;--s:0.8202662721893491"
+    class="wheel"
+  >
+    <div style="--a:8deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:12deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:16deg;--i:4" class="number"></div>
+    <div style="--a:20deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:24deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:28deg;--i:7" class="number"></div>
+    <div style="--a:32deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:36deg;--i:9" class="number"></div>
+    <div style="--a:40deg;--i:10;--r:reverse" class="number"></div>
+    <div style="--a:45deg;--i:11" class="number"></div>
+    <div style="--a:49deg;--i:12" class="number"></div>
+    <div style="--a:53deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:69deg;--i:17" class="number"></div>
+    <div style="--a:73deg;--i:18" class="number"></div>
+    <div style="--a:77deg;--i:19" class="number"></div>
+    <div style="--a:81deg;--i:20" class="number"></div>
+    <div style="--a:90deg;--i:22;--r:reverse" class="number"></div>
+    <div style="--a:94deg;--i:23;--r:reverse" class="number"></div>
+    <div style="--a:98deg;--i:24" class="number"></div>
+    <div style="--a:102deg;--i:25" class="number"></div>
+    <div style="--a:106deg;--i:26" class="number"></div>
+    <div style="--a:114deg;--i:28" class="number"></div>
+    <div style="--a:118deg;--i:29;--r:reverse" class="number"></div>
+    <div style="--a:135deg;--i:33" class="number"></div>
+    <div style="--a:139deg;--i:34" class="number"></div>
+    <div style="--a:143deg;--i:35;--r:reverse" class="number"></div>
+    <div style="--a:147deg;--i:36;--r:reverse" class="number"></div>
+    <div style="--a:155deg;--i:38" class="number"></div>
+    <div style="--a:163deg;--i:40" class="number"></div>
+    <div style="--a:171deg;--i:42" class="number"></div>
+    <div style="--a:175deg;--i:43;--r:reverse" class="number"></div>
+    <div style="--a:180deg;--i:44" class="number"></div>
+    <div style="--a:192deg;--i:47;--r:reverse" class="number"></div>
+    <div style="--a:196deg;--i:48;--r:reverse" class="number"></div>
+    <div style="--a:200deg;--i:49;--r:reverse" class="number"></div>
+    <div style="--a:204deg;--i:50" class="number"></div>
+    <div style="--a:208deg;--i:51;--r:reverse" class="number"></div>
+    <div style="--a:216deg;--i:53" class="number"></div>
+    <div style="--a:225deg;--i:55;--r:reverse" class="number"></div>
+    <div style="--a:229deg;--i:56" class="number"></div>
+    <div style="--a:233deg;--i:57" class="number"></div>
+    <div style="--a:241deg;--i:59" class="number"></div>
+    <div style="--a:245deg;--i:60;--r:reverse" class="number"></div>
+    <div style="--a:249deg;--i:61" class="number"></div>
+    <div style="--a:261deg;--i:64;--r:reverse" class="number"></div>
+    <div style="--a:270deg;--i:66" class="number"></div>
+    <div style="--a:274deg;--i:67" class="number"></div>
+    <div style="--a:278deg;--i:68;--r:reverse" class="number"></div>
+    <div style="--a:282deg;--i:69;--r:reverse" class="number"></div>
+    <div style="--a:290deg;--i:71" class="number"></div>
+    <div style="--a:302deg;--i:74" class="number"></div>
+    <div style="--a:310deg;--i:76" class="number"></div>
+    <div style="--a:319deg;--i:78;--r:reverse" class="number"></div>
+    <div style="--a:323deg;--i:79;--r:reverse" class="number"></div>
+    <div style="--a:327deg;--i:80" class="number"></div>
+    <div style="--a:331deg;--i:81" class="number"></div>
+    <div style="--a:335deg;--i:82;--r:reverse" class="number"></div>
+    <div style="--a:339deg;--i:83;--r:reverse" class="number"></div>
+    <div style="--a:347deg;--i:85" class="number"></div>
+    <div style="--a:351deg;--i:86;--r:reverse" class="number"></div>
+    <div style="--a:355deg;--i:87;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(278 0% 0%);--l:13em;--m:96;--t:96s;--r1:reverse;--s:0.7781065088757396"
+    class="wheel"
+  >
+    <div style="--a:11deg;--i:3;--r:reverse" class="number"></div>
+    <div style="--a:14deg;--i:4" class="number"></div>
+    <div style="--a:18deg;--i:5" class="number"></div>
+    <div style="--a:22.5deg;--i:6" class="number"></div>
+    <div style="--a:29deg;--i:8;--r:reverse" class="number"></div>
+    <div style="--a:33deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:37deg;--i:10;--r:reverse" class="number"></div>
+    <div style="--a:41deg;--i:11;--r:reverse" class="number"></div>
+    <div style="--a:48deg;--i:13" class="number"></div>
+    <div style="--a:67.5deg;--i:18" class="number"></div>
+    <div style="--a:71deg;--i:19" class="number"></div>
+    <div style="--a:74deg;--i:20" class="number"></div>
+    <div style="--a:78deg;--i:21;--r:reverse" class="number"></div>
+    <div style="--a:82deg;--i:22" class="number"></div>
+    <div style="--a:90deg;--i:24" class="number"></div>
+    <div style="--a:93deg;--i:25" class="number"></div>
+    <div style="--a:97.5deg;--i:26" class="number"></div>
+    <div style="--a:112deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:116deg;--i:31" class="number"></div>
+    <div style="--a:123deg;--i:33;--r:reverse" class="number"></div>
+    <div style="--a:127deg;--i:34" class="number"></div>
+    <div style="--a:131deg;--i:35;--r:reverse" class="number"></div>
+    <div style="--a:138deg;--i:37" class="number"></div>
+    <div style="--a:142.5deg;--i:38" class="number"></div>
+    <div style="--a:157.5deg;--i:42" class="number"></div>
+    <div style="--a:161deg;--i:43" class="number"></div>
+    <div style="--a:168deg;--i:45;--r:reverse" class="number"></div>
+    <div style="--a:172deg;--i:46;--r:reverse" class="number"></div>
+    <div style="--a:176deg;--i:47" class="number"></div>
+    <div style="--a:187.5deg;--i:50;--r:reverse" class="number"></div>
+    <div style="--a:191deg;--i:51" class="number"></div>
+    <div style="--a:202deg;--i:54;--r:reverse" class="number"></div>
+    <div style="--a:206deg;--i:55;--r:reverse" class="number"></div>
+    <div style="--a:209deg;--i:56" class="number"></div>
+    <div style="--a:217deg;--i:58" class="number"></div>
+    <div style="--a:221deg;--i:59;--r:reverse" class="number"></div>
+    <div style="--a:224deg;--i:60;--r:reverse" class="number"></div>
+    <div style="--a:232.5deg;--i:62;--r:reverse" class="number"></div>
+    <div style="--a:243deg;--i:65;--r:reverse" class="number"></div>
+    <div style="--a:247deg;--i:66;--r:reverse" class="number"></div>
+    <div style="--a:251deg;--i:67" class="number"></div>
+    <div style="--a:254deg;--i:68;--r:reverse" class="number"></div>
+    <div style="--a:258deg;--i:69" class="number"></div>
+    <div style="--a:262deg;--i:70" class="number"></div>
+    <div style="--a:266deg;--i:71" class="number"></div>
+    <div style="--a:270deg;--i:72;--r:reverse" class="number"></div>
+    <div style="--a:273deg;--i:73" class="number"></div>
+    <div style="--a:281deg;--i:75" class="number"></div>
+    <div style="--a:285deg;--i:76" class="number"></div>
+    <div style="--a:288deg;--i:77;--r:reverse" class="number"></div>
+    <div style="--a:303deg;--i:81" class="number"></div>
+    <div style="--a:307deg;--i:82;--r:reverse" class="number"></div>
+    <div style="--a:311deg;--i:83" class="number"></div>
+    <div style="--a:315deg;--i:84;--r:reverse" class="number"></div>
+    <div style="--a:318deg;--i:85" class="number"></div>
+    <div style="--a:322.5deg;--i:86;--r:reverse" class="number"></div>
+    <div style="--a:326deg;--i:87" class="number"></div>
+    <div style="--a:337deg;--i:90" class="number"></div>
+    <div style="--a:341deg;--i:91" class="number"></div>
+    <div style="--a:356deg;--i:95;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(282 0% 0%);--l:14em;--m:103;--t:103s;--r1:normal;--s:0.731508875739645"
+    class="wheel"
+  >
+    <div style="--a:6deg;--i:2" class="number"></div>
+    <div style="--a:13deg;--i:4" class="number"></div>
+    <div style="--a:17deg;--i:5;--r:reverse" class="number"></div>
+    <div style="--a:20deg;--i:6;--r:reverse" class="number"></div>
+    <div style="--a:27deg;--i:8" class="number"></div>
+    <div style="--a:31deg;--i:9;--r:reverse" class="number"></div>
+    <div style="--a:41deg;--i:12;--r:reverse" class="number"></div>
+    <div style="--a:48deg;--i:14" class="number"></div>
+    <div style="--a:52deg;--i:15" class="number"></div>
+    <div style="--a:59deg;--i:17;--r:reverse" class="number"></div>
+    <div style="--a:62deg;--i:18;--r:reverse" class="number"></div>
+    <div style="--a:73deg;--i:21" class="number"></div>
+    <div style="--a:76deg;--i:22" class="number"></div>
+    <div style="--a:80deg;--i:23" class="number"></div>
+    <div style="--a:83deg;--i:24" class="number"></div>
+    <div style="--a:87deg;--i:25;--r:reverse" class="number"></div>
+    <div style="--a:90deg;--i:26" class="number"></div>
+    <div style="--a:94deg;--i:27" class="number"></div>
+    <div style="--a:97deg;--i:28" class="number"></div>
+    <div style="--a:111deg;--i:32" class="number"></div>
+    <div style="--a:118deg;--i:34" class="number"></div>
+    <div style="--a:122deg;--i:35" class="number"></div>
+    <div style="--a:129deg;--i:37" class="number"></div>
+    <div style="--a:132deg;--i:38" class="number"></div>
+    <div style="--a:136deg;--i:39;--r:reverse" class="number"></div>
+    <div style="--a:143deg;--i:41" class="number"></div>
+    <div style="--a:146deg;--i:42" class="number"></div>
+    <div style="--a:157deg;--i:45" class="number"></div>
+    <div style="--a:160deg;--i:46;--r:reverse" class="number"></div>
+    <div style="--a:171deg;--i:49" class="number"></div>
+    <div style="--a:181deg;--i:52;--r:reverse" class="number"></div>
+    <div style="--a:185deg;--i:53" class="number"></div>
+    <div style="--a:192deg;--i:55" class="number"></div>
+    <div style="--a:199deg;--i:57;--r:reverse" class="number"></div>
+    <div style="--a:209deg;--i:60" class="number"></div>
+    <div style="--a:213deg;--i:61" class="number"></div>
+    <div style="--a:216deg;--i:62" class="number"></div>
+    <div style="--a:223deg;--i:64" class="number"></div>
+    <div style="--a:227deg;--i:65" class="number"></div>
+    <div style="--a:234deg;--i:67;--r:reverse" class="number"></div>
+    <div style="--a:237deg;--i:68;--r:reverse" class="number"></div>
+    <div style="--a:241deg;--i:69" class="number"></div>
+    <div style="--a:244deg;--i:70;--r:reverse" class="number"></div>
+    <div style="--a:251deg;--i:72" class="number"></div>
+    <div style="--a:255deg;--i:73" class="number"></div>
+    <div style="--a:258deg;--i:74;--r:reverse" class="number"></div>
+    <div style="--a:265deg;--i:76;--r:reverse" class="number"></div>
+    <div style="--a:272deg;--i:78" class="number"></div>
+    <div style="--a:279deg;--i:80" class="number"></div>
+    <div style="--a:283deg;--i:81;--r:reverse" class="number"></div>
+    <div style="--a:286deg;--i:82;--r:reverse" class="number"></div>
+    <div style="--a:307deg;--i:88;--r:reverse" class="number"></div>
+    <div style="--a:311deg;--i:89;--r:reverse" class="number"></div>
+    <div style="--a:314deg;--i:90;--r:reverse" class="number"></div>
+    <div style="--a:318deg;--i:91;--r:reverse" class="number"></div>
+    <div style="--a:321deg;--i:92;--r:reverse" class="number"></div>
+    <div style="--a:328deg;--i:94" class="number"></div>
+    <div style="--a:342deg;--i:98" class="number"></div>
+    <div style="--a:346deg;--i:99" class="number"></div>
+    <div style="--a:349deg;--i:100;--r:reverse" class="number"></div>
+  </div>
+  <div
+    style="color:hwb(286 0% 0%);--l:15em;--m:110;--t:110s;--r1:reverse;--s:0.680473372781065"
+    class="wheel"
+  >
+    <div style="--a:6deg;--i:2;--r:reverse" class="number"></div>
+    <div style="--a:13deg;--i:4;--r:reverse" class="number"></div>
+    <div style="--a:16deg;--i:5" class="number"></div>
+    <div style="--a:22deg;--i:7;--r:reverse" class="number"></div>
+    <div style="--a:29deg;--i:9" class="number"></div>
+    <div style="--a:32deg;--i:10" class="number"></div>
+    <div style="--a:36deg;--i:11" class="number"></div>
+    <div style="--a:42deg;--i:13;--r:reverse" class="number"></div>
+    <div style="--a:45deg;--i:14;--r:reverse" class="number"></div>
+    <div style="--a:52deg;--i:16" class="number"></div>
+    <div style="--a:62deg;--i:19;--r:reverse" class="number"></div>
+    <div style="--a:65deg;--i:20;--r:reverse" class="number"></div>
+    <div style="--a:72deg;--i:22" class="number"></div>
+    <div style="--a:78deg;--i:24" class="number"></div>
+    <div style="--a:81deg;--i:25" class="number"></div>
+    <div style="--a:85deg;--i:26;--r:reverse" class="number"></div>
+    <div style="--a:88deg;--i:27;--r:reverse" class="number"></div>
+    <div style="--a:98deg;--i:30;--r:reverse" class="number"></div>
+    <div style="--a:104deg;--i:32" class="number"></div>
+    <div style="--a:114deg;--i:35" class="number"></div>
+    <div style="--a:124deg;--i:38" class="number"></div>
+    <div style="--a:130deg;--i:40;--r:reverse" class="number"></div>
+    <div style="--a:134deg;--i:41" class="number"></div>
+    <div style="--a:137deg;--i:42;--r:reverse" class="number"></div>
+    <div style="--a:140deg;--i:43;--r:reverse" class="number"></div>
+    <div style="--a:150deg;--i:46;--r:reverse" class="number"></div>
+    <div style="--a:157deg;--i:48" class="number"></div>
+    <div style="--a:160deg;--i:49;--r:reverse" class="number"></div>
+    <div style="--a:170deg;--i:52" class="number"></div>
+    <div style="--a:196deg;--i:60;--r:reverse" class="number"></div>
+    <div style="--a:199deg;--i:61;--r:reverse" class="number"></div>
+    <div style="--a:202deg;--i:62;--r:reverse" class="number"></div>
+    <div style="--a:209deg;--i:64;--r:reverse" class="number"></div>
+    <div style="--a:212deg;--i:65;--r:reverse" class="number"></div>
+    <div style="--a:216deg;--i:66" class="number"></div>
+    <div style="--a:225deg;--i:69" class="number"></div>
+    <div style="--a:232deg;--i:71;--r:reverse" class="number"></div>
+    <div style="--a:248deg;--i:76;--r:reverse" class="number"></div>
+    <div style="--a:252deg;--i:77" class="number"></div>
+    <div style="--a:258deg;--i:79" class="number"></div>
+    <div style="--a:261deg;--i:80;--r:reverse" class="number"></div>
+    <div style="--a:265deg;--i:81;--r:reverse" class="number"></div>
+    <div style="--a:268deg;--i:82" class="number"></div>
+    <div style="--a:274deg;--i:84;--r:reverse" class="number"></div>
+    <div style="--a:291deg;--i:89" class="number"></div>
+    <div style="--a:304deg;--i:93" class="number"></div>
+    <div style="--a:317deg;--i:97;--r:reverse" class="number"></div>
+    <div style="--a:320deg;--i:98;--r:reverse" class="number"></div>
+    <div style="--a:327deg;--i:100;--r:reverse" class="number"></div>
+    <div style="--a:333deg;--i:102" class="number"></div>
+    <div style="--a:340deg;--i:104" class="number"></div>
+    <div style="--a:350deg;--i:107" class="number"></div>
+    <div style="--a:356deg;--i:109" class="number"></div>
+  </div>
+</div></body>
+</html>

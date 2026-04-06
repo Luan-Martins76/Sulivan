@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sulivan - Login</title>
+    <link rel="stylesheet" href="../css/logincss.css">
+    <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+    }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="card-switch">
+            <label class="switch">
+               <input type="checkbox" class="toggle">
+               <span class="slider"></span>
+               <span class="card-side"></span>
+               <div class="flip-card__inner">
+
+                  <!-- FRENTE: LOGIN -->
+                  <div class="flip-card__front">
+                     <div class="title">ENTRAR</div>
+                     <form class="flip-card__form" onsubmit="return false;">
+                        <input class="flip-card__input" name="email" placeholder="Email" type="email">
+                        <input class="flip-card__input" name="password" placeholder="Senha" type="password">
+                        <button onclick="fazerLogin()" class="flip-card__btn">Vamos lá!</button>
+                     </form>
+                  </div>
+
+                  <!-- VERSO: CADASTRO -->
+                  <div class="flip-card__back">
+                     <div class="title">CADASTRAR-SE</div>
+                     <form class="flip-card__form" onsubmit="return false;">
+                        <input class="flip-card__input" placeholder="Nome" type="text">
+                        <input class="flip-card__input" name="email" placeholder="Email" type="email">
+                        <input class="flip-card__input" name="password" placeholder="Criar senha" type="password">
+                        <button onclick="fazerCadastro()" class="flip-card__btn">Confirmar!</button>
+                     </form>
+                  </div>
+
+               </div>
+            </label>
+        </div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+</html>
