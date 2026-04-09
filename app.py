@@ -1,9 +1,15 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 from services.ia_service import chat
-from login.logica_login import validar_usuario, criar_conta
+from login.logica_login import (
+    validar_usuario,
+    criar_conta,
+    salvar_mensagem,
+    carregar_historico,
+    limpar_historico,
+)
 
 app = Flask(__name__)
-app.secret_key = "sulivan_chave_secreta_2026"  # troque por algo mais seguro em produção
+app.secret_key = "CLUBE_DAS_WINX_DEFENDO_A_API"  # segurança de altissimo nivel 🫡
 
 
 @app.route("/login", methods=["POST"])
@@ -37,7 +43,7 @@ def cadastro():
         session["user_nome"] = resultado["nome"]
         return jsonify({"status": "ok", "nome": resultado["nome"]})
 
-    return jsonify({"erro": resultado}), 409  # 409 = Conflict (email já existe)
+    return jsonify({"erro": resultado}), 409
 
 
 @app.route("/logout", methods=["POST"])
@@ -48,6 +54,12 @@ def logout():
 
 @app.route("/")
 def index():
+    return render_template("login.html")
+
+@app.route("/index")
+def painel():
+    if "user_id" not in session:
+        return redirect("/")
     return render_template("index.html")
 
 
@@ -59,8 +71,46 @@ def healthcheck():
 @app.route("/chat", methods=["POST"])
 def chat_endpoint():
     mensagem = request.json.get("mensagem")
-    resposta = chat(mensagem)
+    usuario_id = session.get("user_id")
+
+    # ✅ Busca as últimas 5 mensagens para dar contexto ao LLM
+    historico = carregar_historico(usuario_id, limite=5) if usuario_id else []
+
+    resposta_dict = chat(mensagem, historico=historico)
+    resposta = resposta_dict["resposta"] if isinstance(resposta_dict, dict) else resposta_dict
+
+    # ✅ Persiste a troca se o usuário estiver logado
+    if usuario_id:
+        salvar_mensagem(usuario_id, "user", mensagem)
+        salvar_mensagem(usuario_id, "bot", resposta)
+
     return jsonify({"response": resposta})
+
+
+# ─────────────────────────────────────────────
+# ✅ NOVOS ENDPOINTS DE HISTÓRICO
+# ─────────────────────────────────────────────
+
+@app.route("/historico", methods=["GET"])
+def historico():
+    """Retorna o histórico de mensagens do usuário logado."""
+    usuario_id = session.get("user_id")
+    if not usuario_id:
+        return jsonify({"erro": "Não autenticado"}), 401
+
+    mensagens = carregar_historico(usuario_id)
+    return jsonify({"mensagens": mensagens})
+
+
+@app.route("/historico", methods=["DELETE"])
+def deletar_historico():
+    """Apaga todo o histórico do usuário logado."""
+    usuario_id = session.get("user_id")
+    if not usuario_id:
+        return jsonify({"erro": "Não autenticado"}), 401
+
+    limpar_historico(usuario_id)
+    return jsonify({"status": "ok"})
 
 
 if __name__ == "__main__":

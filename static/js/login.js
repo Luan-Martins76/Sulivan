@@ -16,7 +16,7 @@ async function fazerLogin() {
     const data = await response.json();
 
     if (response.ok) {
-        window.location.href = "/"; // vai pro painel
+        window.location.href = "/index"; // vai pro painel
     } else {
         alert(data.erro);
     }

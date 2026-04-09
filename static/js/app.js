@@ -88,26 +88,28 @@
         },
 
         async loadHistory() {
-            // Simulando fetch do backend
-            /*
             try {
                 const res = await fetch('/historico');
-                this.sessions = await res.json();
-            } catch (e) { console.error("Erro ao carregar histórico", e); }
-            */
+                if (!res.ok) throw new Error();
+                const data = await res.json();
 
-            // Dados Mock
-            this.sessions = [
-                {
-                    id: 'exemplo-1',
-                    title: 'Aula de quarta-feira',
-                    date: '06/03/2025',
-                    messages: [
-                        { who: 'user', text: 'o que tem na quarta?', time: '19:02' },
-                        { who: 'bot',  text: 'Tem uma aula de INTRODUÇÃO À ENGENHARIA DE SOLUÇÕES. Começa às 19:00 e termina às 22:40. Local é BLOCO H, SALA 110 📚', source: 'regras', time: '19:02' }
-                    ]
-                }
-            ];
+                // Backend retorna { mensagens: [...] }
+                // Transforma no formato que o frontend espera
+                this.sessions = data.mensagens.length > 0 ? [{
+                    id: 'sessao-atual',
+                    title: 'Conversa atual',
+                    date: Utils.formatDate(),
+                   messages: data.mensagens.map(m => ({
+                    who: m.remetente === 'user' ? 'user' : 'bot',
+                    text: m.conteudo,
+                    time: Utils.now()
+                }))
+                }] : [];
+
+            } catch (e) {
+                console.error("Erro ao carregar histórico", e);
+                this.sessions = [];
+            }
             this.renderHistorySidebar();
         },
 
@@ -133,13 +135,21 @@
             } else {
                 this.sessions.unshift(sessionData);
             }
-
-            // TODO: Enviar para backend
-            /*
-            fetch('/historico', { method: 'POST', body: JSON.stringify(sessionData), headers: {'Content-Type': 'application/json'} });
-            */
+            // ✅ Removido o TODO — backend já salva via /chat automaticamente
 
             this.renderHistorySidebar();
+        },
+
+        async clearHistory() {
+            if (!confirm("Apagar todo o histórico?")) return;
+            try {
+                await fetch('/historico', { method: 'DELETE' });
+                this.sessions = [];
+                this.renderHistorySidebar();
+                this.startNewSession();
+            } catch (e) {
+                console.error("Erro ao limpar histórico", e);
+            }
         },
 
         renderHistorySidebar() {
@@ -297,8 +307,9 @@
                 if (!res.ok) throw new Error(`Status HTTP: ${res.status}`);
 
                 const data = await res.json();
-                botText = (data.response?.resposta?.trim()) ? data.response.resposta : 
-                          (data.erro?.trim()) ? `⚠️ ${data.erro}` : botText;
+                // fica assim — response já é o texto direto
+                botText = (data.response?.trim()) ? data.response :
+                        (data.erro?.trim()) ? `⚠ ${data.erro}` : botText;
                 botSource = typeof data.source === 'string' ? data.source : null;
 
             } catch (err) {
