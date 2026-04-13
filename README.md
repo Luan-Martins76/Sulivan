@@ -1,11 +1,9 @@
 # 🤖 Sulivan — Chatbot Institucional UniEVANGÉLICA
 
-**Projeto:** Sulivan 
-**Versão:** MVP v2.5 — UI Reimaginada + Persistência por Usuário  + Contexto LLM
-**Autores:** Luan Henrique (Martins) 
+**Projeto:** Sulivan  
+**Versão:** MVP v3.0 — Refatoração Modular (JS, CSS e HTML)  
+**Autores:** Luan Henrique (Martins)  
 **Data:** Março / Abril 2026
-
-> ⚠️ **Checkpoint pré-refatoração:** este é o último commit com a estrutura atual. A próxima fase contempla refatoração da arquitetura de pastas, reescrita e organização do CSS, e ajustes gerais de qualidade de código.
 
 ---
 
@@ -23,16 +21,32 @@ O projeto conta com **duas interfaces**:
 
 ## O que mudou nesta versão
 
-### UI Reimaginada
-A interface web passou por uma reformulação visual completa. O dashboard agora conta com uma sidebar de histórico de conversas agrupada por data, bolhas de mensagem diferenciadas por remetente, indicador de digitação animado e navegação entre views sem recarregar a página. (CSS tem que ser ajustado 🥴)
+### Refatoração Modular Completa
+O `app.js` monolítico (antigo Godzilla de 739kb) foi decomposto em módulos independentes por responsabilidade:
 
-A tela de login foi migrada de arquivo estático para template Flask servido via rota protegida, eliminando o acesso direto ao HTML.
+- **`chat.js`** — toda a lógica do chat completo (histórico, sessões, envio, renderização)
+- **`index.js`** — navegação entre views, animação do universo, lógica do dashboard
+- **`login.js`** — autenticação e cadastro via fetch
+- **`mini_chat_home.js`** — widget de mini-chat flutuante da Home, standalone e sem dependências externas
 
-### Persistência por Usuário
-O histórico de conversas agora é salvo no banco SQLite vinculado ao `user_id` da sessão. Cada troca entre usuário e bot é persistida automaticamente a cada requisição ao `/chat`, e o frontend recupera o histórico via `GET /historico` ao carregar a página. O usuário também pode apagar todo o histórico via `DELETE /historico`.
+O CSS também foi separado por página, eliminando o arquivo único extenso:
 
-### Proteção de Rotas
-O dashboard (`/index`) agora exige sessão ativa — sem login, o Flask redireciona para `/`. O endpoint `/historico` retorna `401` para requisições sem sessão.
+- **`chat.css`** — estilos da interface de chat completo
+- **`home.css`** — estilos da view Home e widget flutuante
+- **`index.css`** — estilos globais do dashboard
+- **`logincss.css`** — flip-card de login/cadastro
+- **`calendario.css`** — estilos da view Calendário
+
+As views secundárias foram extraídas do `index.html` monolítico para HTMLs próprios em `static/front_secundarios/`:
+
+- **`home.html`** — view de boas-vindas com mini-chat flutuante
+- **`chat.html`** — interface completa de chat
+- **`calendario.html`** — fundo animado de universo com canvas
+
+### Versões Anteriores
+- **v2.5** — UI Reimaginada + Persistência por Usuário + Contexto LLM
+- **v2.0** — Proteção de rotas, login via template Flask, histórico SQLite
+- **v1.0** — MVP inicial com motor de regras e fallback LLM
 
 ---
 
@@ -41,43 +55,54 @@ O dashboard (`/index`) agora exige sessão ativa — sem login, o Flask redireci
 ```
 Sulivan-main/
 │
-├── app.py                          # Servidor Flask — rotas HTTP
+├── app.py                              # Servidor Flask — rotas HTTP
 │
 ├── login/
-│   └── logica_login.py             # Autenticação e cadastro de usuários (SQLite)
+│   └── logica_login.py                 # Autenticação e cadastro de usuários (SQLite)
 │
 ├── services/
-│   ├── ia_service.py               # Lógica principal do chat (motor de regras + LLM)
-│   └── baseado_regras.py           # Dados estáticos: agenda, aliases, fallbacks, contadores
+│   ├── ia_service.py                   # Lógica principal do chat (motor de regras + LLM)
+│   └── baseado_regras.py               # Dados estáticos: agenda, aliases, fallbacks, contadores
 │
 ├── dados/
-│   ├── integração_dados.py         # Carregamento centralizado dos JSONs
-│   ├── usuarios.db                 # Banco SQLite de usuários e histórico (gerado automaticamente)
-│   ├── institucional.json          # Missão, visão, história da UniEVANGÉLICA
-│   ├── cursos.json                 # Cursos por campus
-│   ├── materias.json               # Disciplinas por curso
-│   ├── professores.json            # Professores
-│   ├── secretaria.json             # Dados da secretaria
-│   └── calendario.json             # Calendário acadêmico
+│   ├── integração_dados.py             # Carregamento centralizado dos JSONs
+│   ├── usuarios.db                     # Banco SQLite de usuários e histórico (gerado automaticamente)
+│   ├── institucional.json              # Missão, visão, história da UniEVANGÉLICA
+│   ├── cursos.json                     # Cursos por campus
+│   ├── materias.json                   # Disciplinas por curso
+│   ├── professores.json                # Professores
+│   ├── secretaria.json                 # Dados da secretaria
+│   └── calendario.json                 # Calendário acadêmico
 │
 ├── templates/
-│   ├── index.html                  # Dashboard web (Jinja2) — protegido por sessão
-│   └── login.html                  # Tela de login/cadastro (flip-card) — agora em templates/
+│   ├── index.html                      # Dashboard web (Jinja2) — protegido por sessão
+│   ├── login.html                      # Tela de login/cadastro (flip-card)
+│   └── sulivan.kv                      # Layout declarativo do app Kivy
 │
 ├── static/
 │   ├── css/
-│   │   ├── styles.css              # Estilos do dashboard web
-│   │   └── logincss.css            # Estilos do flip-card de login/cadastro
-│   └── js/
-│       ├── app.js                  # Lógica de navegação, chat, histórico e animação
-│       └── login.js                # Funções fazerLogin() e fazerCadastro()
+│   │   ├── index.css                   # Estilos globais do dashboard
+│   │   ├── chat.css                    # Estilos da interface de chat completo
+│   │   ├── home.css                    # Estilos da Home e mini-chat flutuante
+│   │   ├── calendario.css              # Estilos da view Calendário
+│   │   └── logincss.css                # Estilos do flip-card de login/cadastro
+│   ├── js/
+│   │   ├── index.js                    # Navegação entre views, animação universo
+│   │   ├── chat.js                     # Chat completo: sessões, histórico, envio
+│   │   ├── mini_chat_home.js           # Mini-chat flutuante da Home (standalone)
+│   │   └── login.js                    # fazerLogin() e fazerCadastro()
+│   ├── front_secundarios/
+│   │   ├── home.html                   # View de boas-vindas com mini-chat
+│   │   ├── chat.html                   # View de chat completo
+│   │   └── calendario.html             # View com fundo animado de universo
+│   └── imagem/
+│       └── *.png                       # Imagens dos campi
 │
-├── Kivy.py                         # App mobile (Kivy) — reutiliza ia_service diretamente
-├── templates/sulivan.kv            # Layout declarativo do app Kivy
+├── Kivy.py                             # App mobile (Kivy)
 │
 └── tests/
-    ├── interface.html              # Interface de teste manual (standalone)
-    └── test_app.py                 # Testes automatizados (unittest)
+    ├── interface.html                  # Interface de teste manual (standalone)
+    └── test_app.py                     # Testes automatizados (unittest)
 ```
 
 ---
@@ -182,23 +207,33 @@ Senhas nunca são armazenadas em texto puro — apenas o hash gerado por `werkze
 
 ---
 
-### `templates/login.html` — Tela de Login/Cadastro
+### Frontend Web (`templates/` + `static/`)
 
-Interface com **flip-card animado**: o lado da frente é o formulário de login e o verso é o formulário de cadastro. A alternância entre os dois é feita com um checkbox CSS.
+Dashboard Flask com navegação por sidebar. As views secundárias (Home, Chat, Calendário) são carregadas como iframes a partir de `static/front_secundarios/`, mantendo cada módulo isolado com seu próprio HTML, CSS e JS.
 
-- Frente: campos de email e senha → chama `fazerLogin()`
-- Verso: campos de nome, email e senha → chama `fazerCadastro()`
+**JavaScript — módulos independentes:**
 
-> Migrada de `static/front_secundarios/` para `templates/` nesta versão, passando a ser servida via rota Flask em vez de arquivo estático acessível diretamente.
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `index.js` | Navegação entre views, controle do widget flutuante, animação do universo (canvas), sincronização do dock |
+| `chat.js` | Chat completo: sessões, histórico persistente com sidebar agrupada por data, envio de mensagens, indicador de digitação |
+| `mini_chat_home.js` | Mini-chat flutuante da Home — standalone, sem dependência do `index.js` ou `chat.js` |
+| `login.js` | `fazerLogin()` e `fazerCadastro()` via fetch |
 
----
+**CSS — separado por escopo:**
 
-### `static/js/login.js` — Lógica do Frontend de Autenticação
+| Arquivo | Escopo |
+|---------|--------|
+| `index.css` | Layout global do dashboard, dock, sidebar, tema dark |
+| `chat.css` | Interface de chat completo, bolhas, histórico |
+| `home.css` | View Home, widget flutuante de mini-chat |
+| `calendario.css` | View Calendário |
+| `logincss.css` | Flip-card de login/cadastro |
 
-Duas funções assíncronas que fazem `fetch` para o backend:
-
-- `fazerLogin()` — envia email e senha via `POST /login`. Em caso de sucesso, redireciona para `/index`. Em caso de erro, exibe o alerta com a mensagem retornada pelo servidor.
-- `fazerCadastro()` — envia nome, email e senha via `POST /cadastro`. Em caso de sucesso, exibe boas-vindas e redireciona para `/`. Em caso de erro (ex: email já cadastrado), exibe o alerta.
+**Views disponíveis:**
+- **Home** — boas-vindas, widget flutuante de mini-chat
+- **Calendário** — fundo animado de universo com canvas, estrelas, planetas e paralaxe com mouse
+- **Chat** — interface completa com histórico de sessões na sidebar (agrupado por data), bolhas de mensagem diferenciadas por remetente, indicador de digitação e input com envio por Enter
 
 ---
 
@@ -249,27 +284,6 @@ Todos os JSONs são carregados no startup via `integração_dados.py`:
 | `professores.json` | Professores (em expansão) |
 | `secretaria.json` | Dados da secretaria (em expansão) |
 | `calendario.json` | Calendário acadêmico |
-
----
-
-### Frontend Web (`templates/` + `static/`)
-
-Dashboard single-page servido pelo Flask, com navegação por sidebar. A interface foi reimaginada nesta versão com foco em usabilidade e clareza visual.
-
-**`static/js/app.js`** — organizado em módulos JavaScript:
-- `Utils` — funções utilitárias (hora, data, escape HTML, geração de ID de sessão)
-- `app` — navegação entre views, setup de event listeners
-- `chat` — envio de mensagens, renderização de bolhas, histórico persistente com sidebar agrupada por data, integração com os endpoints `/historico`
-- `universe` — animação canvas do fundo do Calendário (estrelas, planetas, paralaxe com mouse)
-
-**`static/css/styles.css`** — cobre layout do dashboard, tema dark, sidebar, chat, animações e responsividade.
-
-> ⚠️ O CSS será reorganizado na próxima fase — atualmente concentrado em um único arquivo extenso.
-
-**Views disponíveis:**
-- **Início** — boas-vindas, widget flutuante de mini-chat (só aparece nessa view)
-- **Calendário** — fundo animado de universo com canvas, planetas e paralaxe
-- **Chat** — interface completa com histórico de sessões na sidebar (agrupado por data), bolhas de mensagem diferenciadas por remetente, indicador de digitação e input com envio por Enter
 
 ---
 
@@ -460,7 +474,7 @@ O prompt instrui o modelo a se comportar como "Lionel No IT", proibindo invenç�
 
 ---
 
-## Limitações do MVP
+## Limitações Conhecidas
 
 - A agenda é **estática** — codificada no `baseado_regras.py`. Mudanças de horário exigem edição manual do código.
 - Os contadores de ironia ficam **em memória** — reiniciam a cada restart do servidor.
@@ -471,10 +485,8 @@ O prompt instrui o modelo a se comportar como "Lionel No IT", proibindo invenç�
 
 ---
 
-## Melhorias Planejadas (próxima fase)
+## Melhorias Planejadas
 
-- Refatoração da estrutura de pastas para separar melhor responsabilidades
-- Reescrita e organização do CSS (atualmente em arquivo único extenso)
 - Externalizar a agenda para um JSON ou banco de dados, eliminando edições de código para atualizações
 - Persistir contadores de ironia em Redis para manter estado entre restarts
 - Criar `requirements.txt` para facilitar o setup

@@ -2,7 +2,7 @@ import importlib.util
 import pathlib
 import unittest
 
-
+# isso nem funciona mais, depois vejo isso aqui
 APP_PATH = pathlib.Path(__file__).resolve().parents[1] / "Sulivan" / "app.py"
 spec = importlib.util.spec_from_file_location("lionel_app", APP_PATH)
 module = importlib.util.module_from_spec(spec)
@@ -37,3 +37,4 @@ class ChatRouteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/chat.css">
+</head>
+<style>
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+  
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+  </style>
+<body>
+   <div class="chat-page">
+        <aside class="chat-sidebar" id="chatSidebar" aria-label="Histórico de conversas">
+          <div class="chat-sidebar-header">
+            <span>💬 Histórico</span>
+            <button class="btn-new-chat" onclick="chat.startNewSession()" aria-label="Novo chat">+ Novo</button>
+          </div>
+          <div id="historyList" role="list"></div>
+        </aside>
+        <div class="chat-main">
+          <header class="chat-header">
+            <button class="btn-toggle-sidebar" onclick="chat.toggleHistorySidebar()" aria-label="Alternar histórico" title="Histórico">☰</button>
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-header-info">
+              <h3 id="chatTitle">Nova conversa</h3>
+              <span id="init-time"></span>
+            </div>
+          </header>
+          <div id="chatbox" aria-live="polite" aria-atomic="false"></div>
+          <div class="chat-input-area">
+            <div class="input-wrapper">
+              <input type="text" id="userInput" placeholder="Digite sua mensagem para o Sulivan..." autocomplete="off" aria-label="Campo de mensagem" />
+            </div>
+            <button id="sendBtn" onclick="chat.handleSendMessage()" aria-label="Enviar mensagem">➤</button>
+          </div>
+        </div>
+      </div> 
+</body>
+<script src="/static/js/chat.js"></script>
+</html>
