@@ -320,3 +320,7 @@
         .icon-content a[data-view="sair"]           .filled { background: #ef4444; }
         .icon-content a[data-view="sair"]           ~ .tooltip { background: #ef4444; }
         .icon-content a[data-view="sair"]           ~ .tooltip::after { border-top-color: #ef4444; }
+
+        .icon-content a[data-view="AVA"]           .filled { background: #9c1212; }
+        .icon-content a[data-view="AVA"]           ~ .tooltip { background: #9c1212; }
+        .icon-content a[data-view="AVA"]           ~ .tooltip::after { border-top-color: #9c1212; }

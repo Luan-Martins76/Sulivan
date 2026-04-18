@@ -28,6 +28,11 @@ def login():
 
     return jsonify({"erro": "Email ou senha inválidos"}), 401
 
+@app.route("/cookie")
+def cookie():
+    return render_template("cookie_chat.html")
+
+
 
 @app.route("/cadastro", methods=["POST"])
 def cadastro():

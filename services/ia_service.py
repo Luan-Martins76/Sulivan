@@ -95,6 +95,48 @@ def montar_contexto(historico: list) -> str:
     return "HISTÓRICO RECENTE DA CONVERSA:\n" + "\n".join(linhas) + "\n"
 
 
+def formatar_calendario(dados, campus, mes=None):
+    chave_campus = normalize_text(campus).replace(" ", "_")
+    calendario_json = dados.get("calendario", {})
+    campus_dados = calendario_json.get(chave_campus)
+
+    if not campus_dados:
+        return f"❌ Campus '{campus}' não encontrado."
+
+    # Se um mês específico foi pedido
+    if mes:
+        chave_mes = normalize_text(mes)
+        mes_dados = campus_dados.get(chave_mes)
+        if not mes_dados:
+            return f"❌ Mês '{mes}' não encontrado para o campus {campus}."
+        return _formatar_mes(chave_mes, mes_dados)
+
+    # Se não, retorna o ano todo
+    texto = f"📅 Calendário — {chave_campus.replace('_', ' ').title()}:\n\n"
+    for nome_mes, mes_dados in campus_dados.items():
+        texto += _formatar_mes(nome_mes, mes_dados) + "\n"
+    return texto
+
+
+def _formatar_mes(nome_mes, mes_dados):
+    texto = f"🗓️ {nome_mes.title()}:\n"
+
+    eventos = mes_dados.get("eventos", {})
+    if eventos:
+        texto += "  📌 Eventos:\n"
+        for data, descricao in eventos.items():
+            texto += f"    • {data}: {descricao}\n"
+
+    dias_letivos = mes_dados.get("dias_letivos")
+    feriados = mes_dados.get("feriados")
+
+    if dias_letivos is not None:
+        texto += f"  📖 Dias letivos: {dias_letivos}\n"
+    if feriados is not None:
+        texto += f"  🔴 Feriados: {feriados}\n"
+
+    return texto
+
 # ------------------------ MOTOR DE REGRAS ------------------------
 
 def processar_mensagem(mensagem: str, historico: list = None):
@@ -167,9 +209,27 @@ def processar_mensagem(mensagem: str, historico: list = None):
             "resposta": "Calculadora? Cara, tem uma no seu celular... Mas tudo bem, me manda os números e a operação (+, -, *, /) 🧮"
         }
 
-    # --- SAIR ---
-    if mensagem in ["sair", "tchau", "bye", "falou"]:
-        return {"source": "regras", "resposta": "Falou man 👋 Até mais!"}
+    # --- calendario ---
+    if "calendario" in mensagem or "evento" in mensagem or "feriado" in mensagem:
+        calendario_json = dados.get("calendario", {})
+        campus_map = {
+            normalize_text(chave).lower().replace("_", " "): chave  # 👈 underscore vira espaço
+            for chave in calendario_json.keys()
+        }
+        
+        campus_encontrado = None
+        for termo, chave_real in campus_map.items():
+            if termo in mensagem:
+                campus_encontrado = chave_real
+                break
+
+        if campus_encontrado:
+            meses = [
+                "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+                "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+            ]
+            mes_encontrado = next((m for m in meses if m in mensagem), None)
+            return {"source": "regras", "resposta": formatar_calendario(dados, campus_encontrado, mes_encontrado)}  
 
     # ---------------------- MODELOS LLM ----------------------
 

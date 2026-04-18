@@ -37,6 +37,14 @@
       </iframe>
     </section>
 
+    <section id="view-AVA" class="view-section" aria-label="AVA - UNI">
+      <iframe
+        src="https://www4.unievangelica.edu.br"
+        style="position:absolute; inset:0; width:100%; height:100%; border:none; z-index:0;">
+      </iframe>
+    </section>
+
+
   </main>
 
   <!-- ── Dock ──────────────────────────────────────────── -->
@@ -44,6 +52,8 @@
     <div class="dock-inner">
       <ul class="dock-list">
 
+          
+        
         <li class="icon-content">
           <span class="tooltip">Início</span>
           <a href="#home" data-view="home"
@@ -80,8 +90,17 @@
           </a>
         </li>
 
-      </ul>
+      
 
+      <li class="icon-content">
+        <span class="tooltip">UniEvangélica</span>
+        <a href="#AVA" data-view="AVA"
+            onclick="app.switchView('AVA', this); return false;">
+          <div class="filled"></div>
+          <span class="icon-glyph">🚀</span>
+        </a>
+      </li>                
+      </ul>
       <div class="dock-divider" aria-hidden="true"></div>
 
       <ul class="dock-list">
@@ -111,6 +130,7 @@
           </a>
         </li>
 
+        
       </ul>
     </div>
   </nav>
