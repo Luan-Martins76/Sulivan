@@ -1,3 +1,79 @@
+// ─── estado ───────────────────────────────────────────────
+let _resumoAtual = null;
+
+// ─── referências ──────────────────────────────────────────
+const infoBar    = document.querySelector('.info');
+const infoIcon   = document.querySelector('.info__icon');
+const infoClose  = document.querySelector('.info__close');
+
+// ─── card do resumo (criado dinamicamente) ────────────────
+const resumoCard = document.createElement('div');
+resumoCard.id = 'resumo-card';
+resumoCard.style.cssText = `
+  display: none;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #509AF8;
+  border-radius: 8px;
+  padding: 14px 16px;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  z-index: 999;
+`;
+// posiciona logo abaixo da barra — ajuste o parentElement se precisar
+infoBar.style.position = 'relative';
+infoBar.appendChild(resumoCard);
+
+// ─── funções ──────────────────────────────────────────────
+function mostrarCard() {
+  if (!_resumoAtual) return;
+  resumoCard.textContent = _resumoAtual;
+  resumoCard.style.display = 'block';
+  // posiciona abaixo da barra
+  resumoCard.style.top = (infoBar.offsetHeight + 6) + 'px';
+  resumoCard.style.left = '0';
+}
+
+function esconderCard() {
+  resumoCard.style.display = 'none';
+}
+
+function esconderBarra() {
+  esconderCard();
+  infoBar.style.display = 'none';
+}
+
+// ─── eventos ──────────────────────────────────────────────
+infoIcon.style.cursor = 'pointer';
+infoIcon.addEventListener('click', () => {
+  clearTimeout(infoBar._hideTimer); // ← isso aqui, cancela o timer de 8s
+  resumoCard.style.display === 'block' ? esconderCard() : mostrarCard();
+});
+
+infoClose.addEventListener('click', esconderBarra);
+
+// fecha o card ao clicar fora
+document.addEventListener('click', (e) => {
+  if (!infoBar.contains(e.target)) esconderCard();
+});
+
+// ─── chamado após receber resposta da rota /chat ──────────
+function atualizarMemoria(data) {
+  if (!data.memoria_atualizada || !data.resumo_memoria) return;
+
+  _resumoAtual = data.resumo_memoria;
+  infoBar.style.display = 'flex'; // mostra a barra
+  esconderCard();                 // garante que o card começa fechado
+
+  // some sozinho em 8s se o usuário não interagiu
+  clearTimeout(infoBar._hideTimer);
+  infoBar._hideTimer = setTimeout(esconderBarra, 8000);
+}
+
+
 /**
  * Utilitários — copiados do app.js para manter mini_chat_home.js independente
  */
@@ -242,25 +318,26 @@ const chat = {
         let botText = '⚠️ Não consegui entender a resposta do servidor.';
         let botSource = null;
 
-        try {
-            const res = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: text })
-            });
+    try {
+        const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensagem: text })
+        });
 
-            if (!res.ok) throw new Error(`Status HTTP: ${res.status}`);
+        if (!res.ok) throw new Error(`Status HTTP: ${res.status}`);
 
-            const data = await res.json();
-            botText = (data.response?.trim()) ? data.response :
-                      (data.erro?.trim())     ? `⚠ ${data.erro}` : botText;
-            botSource = typeof data.source === 'string' ? data.source : null;
+        const data = await res.json();
+        botText = (data.response?.trim()) ? data.response :
+                (data.erro?.trim())     ? `⚠ ${data.erro}` : botText;
+        botSource = typeof data.source === 'string' ? data.source : null;
 
-        } catch (err) {
-            console.error("Erro na comunicação:", err);
-            botText = '⚠️ Servidor indisponível ou erro na requisição. Verifique sua conexão e se o backend está rodando.';
-        }
+        atualizarMemoria(data); // ← aqui
 
+    } catch (err) {
+        console.error("Erro na comunicação:", err);
+        botText = '⚠️ Servidor indisponível ou erro na requisição. Verifique sua conexão e se o backend está rodando.';
+    }       
         this.removeTypingIndicator();
         const botTime = Utils.now();
         chatbox.insertAdjacentHTML('beforeend', this.buildMessageHtml('bot', botText, botSource, botTime));

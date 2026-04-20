@@ -112,11 +112,13 @@ def carregar_historico(usuario_id: int, limite: int = 100):
     try:
         rows = conn.execute(
             """
-            SELECT id, remetente, conteudo, criado_em
-            FROM mensagens
-            WHERE usuario_id = ?
-            ORDER BY criado_em ASC
-            LIMIT ?
+            SELECT id, remetente, conteudo, criado_em FROM (
+                SELECT id, remetente, conteudo, criado_em
+                FROM mensagens
+                WHERE usuario_id = ?
+                ORDER BY criado_em DESC
+                LIMIT ?
+            ) ORDER BY criado_em ASC
             """,
             (usuario_id, limite)
         ).fetchall()

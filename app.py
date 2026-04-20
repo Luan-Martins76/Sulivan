@@ -82,18 +82,23 @@ def chat_endpoint():
     mensagem = request.json.get("mensagem")
     usuario_id = session.get("user_id")
 
-    # ✅ Busca as últimas 5 mensagens para dar contexto ao LLM
-    historico = carregar_historico(usuario_id, limite=5) if usuario_id else []
+    # Busca as últimas 15 mensagens para o pipeline de memória
+    historico = carregar_historico(usuario_id, limite=15) if usuario_id else []
 
     resposta_dict = chat(mensagem, historico=historico)
     resposta = resposta_dict["resposta"] if isinstance(resposta_dict, dict) else resposta_dict
 
-    # ✅ Persiste a troca se o usuário estiver logado
+    # Persiste a troca se o usuário estiver logado
     if usuario_id:
         salvar_mensagem(usuario_id, "user", mensagem)
         salvar_mensagem(usuario_id, "bot", resposta)
 
-    return jsonify({"response": resposta})
+    return jsonify({
+        "response": resposta,
+        "source": resposta_dict.get("source"),
+        "memoria_atualizada": resposta_dict.get("memoria_atualizada", False),
+        "resumo_memoria": resposta_dict.get("resumo_memoria"),
+    })
 
 
 # ─────────────────────────────────────────────
