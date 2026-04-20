@@ -1,5 +1,5 @@
 from flask import request, has_request_context
-from services.baseado_regras import AGENDA_ALIASES, contadores, agenda, fallback
+from services.baseado_regras import AGENDA_ALIASES, agenda, fallback
 from dados.integração_dados import dados
 import markdown
 import unicodedata
@@ -145,24 +145,17 @@ def processar_mensagem(mensagem: str, historico: list = None):
 
     mensagem = mensagem.strip().lower()
     historico = historico or []
-    contadores["total"] += 1
-
+    
     # --- AGENDA ---
     dia_encontrado = resolve_day(mensagem)
     if dia_encontrado:
         aula = agenda[dia_encontrado]
-        contadores["dia"] += 1
-
-        if contadores["dia"] == 4:
-            resposta = "🥴 Tá bom, tá bom... VOCÊ venceu, parabéns? 🤨 Vou responder só o que o Martins falou para eu fazer 🤡"
-        elif contadores["dia"] == 3:
-            resposta = "É uma aula só que tu vai ter hoje seu maldito! Tá me perguntando os dias tudo porque? 🤨"
-        else:
-            resposta = (
-                f"Tem uma aula do balacobaco de {aula['materia']} com o professor {aula['professor']}. "
-                f"Começa às {aula['inicio']} e termina às {aula['termino']}. "
-                f"Local é {aula['local']} 📚"
-            )
+       
+        resposta = (
+            f"Tem uma aula do balacobaco de {aula['materia']} com o professor {aula['professor']}. "
+            f"Começa às {aula['inicio']} e termina às {aula['termino']}. "
+            f"Local é {aula['local']} 📚"
+        )
         return {"source": "regras", "resposta": resposta}
 
     # --- CRIADOR ---
@@ -193,22 +186,9 @@ def processar_mensagem(mensagem: str, historico: list = None):
 
     # --- NOME ---
     if "nome" in mensagem and ("seu" in mensagem or "qual" in mensagem):
-        contadores["meu_nome"] += 1
-        if contadores["meu_nome"] >= 4:
-            return {"source": "regras", "resposta": "Skynet 🤖"}
-        elif contadores["meu_nome"] == 3:
-            return {"source": "regras", "resposta": "Acho que eu escolhi outro... 😑"}
-        else:
-            return {"source": "regras", "resposta": "Meu nome é Lionel No IT 😉"}
+        return {"source": "regras", "resposta": "Meu nome é Sulivan 😉"}
 
-    # --- CALCULADORA ---
-    if "calculadora" in mensagem:
-        contadores["calculadora"] += 1
-        return {
-            "source": "regras",
-            "resposta": "Calculadora? Cara, tem uma no seu celular... Mas tudo bem, me manda os números e a operação (+, -, *, /) 🧮"
-        }
-
+    
     # --- calendario ---
     if "calendario" in mensagem or "evento" in mensagem or "feriado" in mensagem:
         calendario_json = dados.get("calendario", {})

@@ -1,0 +1,10 @@
+# Segredos
+.env
+
+# Banco de dados
+dados/usuarios.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/

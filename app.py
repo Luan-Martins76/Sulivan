@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect
+from dotenv import load_dotenv
 from services.ia_service import chat
 from login.logica_login import (
     validar_usuario,
@@ -7,9 +8,12 @@ from login.logica_login import (
     carregar_historico,
     limpar_historico,
 )
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "CLUBE_DAS_WINX_DEFENDO_A_API"  # segurança de altissimo nivel 🫡
+app.secret_key = os.getenv("SECRET_KEY")
 
 
 @app.route("/login", methods=["POST"])
@@ -119,4 +123,4 @@ def deletar_historico():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)

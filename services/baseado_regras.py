@@ -2,14 +2,6 @@ usuario = {
     "nome": "Visitante",
 }
 
-contadores = {
-    "total": 0,
-    "else": 0,
-    "dia": 0,
-    "meu_nome": 0,
-    "calculadora": 0,
-}
-
 agenda = {
     "segunda": {
         "materia": "FUNDAMENTOS DE ENGENHARIA DE DADOS",
