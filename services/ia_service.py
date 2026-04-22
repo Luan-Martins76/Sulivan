@@ -8,7 +8,7 @@ import requests
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 REQUEST_TIMEOUT_SECONDS = 20
-MEMORY_TIMEOUT_SECONDS  = 45   # memória pode ser mais lenta, timeout separado
+MEMORY_TIMEOUT_SECONDS  = 180   # memória pode ser mais lenta, timeout separado
 
 # ✅ Papéis dos modelos
 MODELO_MEMORIA   = "mistral-nemo:12b"   # Responsável por resumir o histórico
@@ -21,7 +21,7 @@ RESUMO_MINIMO_MSGS     = 4   # Abaixo disso não vale o custo de resumir
 
 # ------------------------ AUXILIARES ------------------------
 
-def call_llm(model, prompt, temperature=0.3, timeout=REQUEST_TIMEOUT_SECONDS):
+def call_llm(model, prompt, temperature=0.3, timeout=REQUEST_TIMEOUT_SECONDS, keep_alive=True):
     response = requests.post(
         OLLAMA_URL,
         json={
@@ -29,6 +29,7 @@ def call_llm(model, prompt, temperature=0.3, timeout=REQUEST_TIMEOUT_SECONDS):
             "prompt": prompt,
             "stream": False,
             "options": {"temperature": temperature},
+            "keep_alive": -1 if keep_alive else 0,
         },
         timeout=timeout,
     )
@@ -173,44 +174,97 @@ def _serializar_historico(historico: list) -> str:
         linhas.append(f"{prefixo}: {msg['conteudo']}")
     return "\n".join(linhas)
 
+def _get_contador_total() -> int:
+    if has_request_context():
+        return session.get("total_msgs_usuario", 0)
+    return 0
 
-def gerar_resumo_memoria(historico: list) -> str | None:
+def _incrementar_contador() -> int:
+    if has_request_context():
+        n = session.get("total_msgs_usuario", 0) + 1
+        session["total_msgs_usuario"] = n
+        return n
+    return 0
+
+def gerar_resumo_memoria(historico: list, n_total: int = 0) -> tuple[str | None, bool]:
     """
     Envia as últimas HISTORICO_MEMORIA_MAX mensagens para o MODELO_MEMORIA
-    e retorna um resumo compacto do contexto da conversa.
+    e retorna (resumo, foi_gerado_agora).
 
-    O resumo só é regenerado a cada RESUMO_INTERVALO_MSGS mensagens do usuário.
+    Usa n_total (contador absoluto da sessão) para decidir quando regenerar.
     O cache é isolado por sessão Flask — sem vazamento entre usuários.
 
-    Retorna None se o histórico for pequeno demais ou se o modelo falhar.
+    Retorna (None, False) se o histórico for pequeno demais ou se o modelo falhar.
     """
     janela = historico[-HISTORICO_MEMORIA_MAX:]
 
     if len(janela) < RESUMO_MINIMO_MSGS:
-        return None
+        return None, False
 
-    n_msgs_usuario = _contar_msgs_usuario(historico)
     cache_atual, cache_gerado_em = _get_cache_resumo()
-    msgs_desde_ultimo_resumo = n_msgs_usuario - cache_gerado_em
 
+    # ← sessão nova: n_total menor que cache_em significa que reiniciou
+    if n_total < cache_gerado_em:
+        cache_atual = None
+        cache_gerado_em = 0
+        _set_cache_resumo("", 0)  # limpa o cache velho
+
+    msgs_desde_ultimo_resumo = n_total - cache_gerado_em
+
+    cache_atual, cache_gerado_em = _get_cache_resumo()
+    msgs_desde_ultimo_resumo = n_total - cache_gerado_em
+    
     # ✅ Ainda dentro do intervalo — devolve o cache sem chamar o modelo
     if cache_atual and msgs_desde_ultimo_resumo < RESUMO_INTERVALO_MSGS:
-        return cache_atual
+        return cache_atual, False  # ← False: não foi gerado agora
 
     # Chegou a hora de regenerar
     historico_texto = _serializar_historico(janela)
 
-    prompt_memoria = f"""Você é um sistema de memória de conversas.
+    prompt_memoria = f"""Você é um sistema especializado em compressão de contexto conversacional.
 
-Sua única tarefa é ler o histórico abaixo e gerar um resumo CONCISO e FACTUAL.
-O resumo será usado por outro assistente para entender o contexto da conversa.
+Sua tarefa é analisar as últimas mensagens de um usuário e gerar um resumo estruturado, objetivo e útil para outro modelo de linguagem usar como memória.
 
-REGRAS:
-- Máximo de 5 linhas.
-- Destaque: tópicos discutidos, preferências do usuário, perguntas já respondidas.
-- NÃO responda perguntas. Apenas resuma o que aconteceu.
-- Escreva em português do Brasil.
-- Seja objetivo. Sem introduções como "O usuário perguntou...".
+REGRAS IMPORTANTES:
+- NÃO invente informações.
+- NÃO complete lacunas com suposições.
+- Use APENAS o que está explicitamente nas mensagens.
+- Seja conciso, mas preserve informações importantes.
+- Priorize intenção, contexto e continuidade.
+- Ignore conversas irrelevantes, ruído ou repetições.
+- NÃO inclua opinião, julgamento ou explicações desnecessárias.
+
+ENTRADA:
+Você receberá até 15 mensagens recentes do usuário.
+
+SAÍDA (FORMATO OBRIGATÓRIO):
+
+Resumo Geral:
+- (Resumo curto do que o usuário está fazendo, perguntando ou tentando resolver)
+
+Objetivos do Usuário:
+- (Lista clara do que o usuário quer alcançar)
+
+Contexto Relevante:
+- (Informações importantes que impactam respostas futuras)
+
+Preferências/Estilo:
+- (Como o usuário se comunica ou prefere respostas, se identificável)
+
+Pendências:
+- (O que ainda não foi resolvido ou pode ser continuidade)
+
+Sinais de Atenção:
+- (Possíveis ambiguidades, mudanças de direção ou dúvidas)
+
+RESTRIÇÕES:
+- Máximo de 150-200 palavras.
+- Use bullet points.
+- Linguagem clara e direta.
+- Não repita mensagens literalmente, resuma.
+
+IMPORTANTE:
+Esse resumo será usado por outro modelo para continuar a conversa com precisão. Qualquer erro ou invenção prejudica o sistema.
 
 HISTÓRICO:
 {historico_texto}
@@ -218,43 +272,44 @@ HISTÓRICO:
 RESUMO DO CONTEXTO:"""
 
     try:
-        resumo = call_llm(MODELO_MEMORIA, prompt_memoria, temperature=0.1, timeout=MEMORY_TIMEOUT_SECONDS)
+        resumo = call_llm(MODELO_MEMORIA, prompt_memoria, temperature=0.3, timeout=MEMORY_TIMEOUT_SECONDS, keep_alive=False)
         resumo = resumo.strip()
         if resumo:
-            _set_cache_resumo(resumo, n_msgs_usuario)
-        return resumo or None
-    except Exception:
-        # Se falhar, retorna o cache antigo se ainda existir (melhor que nada)
-        return cache_atual or None
+            _set_cache_resumo(resumo, n_total)  # ← salva n_total, não n_msgs_usuario
+            return resumo, True  # ← True: acabou de gerar agora
+        return None, False
+    except Exception as e:
+        print(f"[MEMORIA] ❌ ERRO no modelo: {e}") #se der ruim mostra o porque
+        return cache_atual or None, False
 
 
-def montar_contexto(historico: list) -> str:
+def montar_contexto(historico: list, n_total: int = 0) -> tuple[str, bool]:
     """
     Pipeline de memória comprimida:
     1. Tenta gerar um resumo via MODELO_MEMORIA (mistral-nemo).
-    2. Se conseguir → retorna o resumo formatado.
+    2. Se conseguir → retorna (resumo formatado, foi_gerado_agora).
     3. Se falhar → cai de volta para as últimas 5 mensagens brutas (comportamento legado).
     """
     if not historico:
-        return ""
+        return "", False
 
-    resumo = gerar_resumo_memoria(historico)
+    resumo, gerado_agora = gerar_resumo_memoria(historico, n_total=n_total)
 
     if resumo:
-        return f"RESUMO DO CONTEXTO DA CONVERSA (gerado automaticamente):\n{resumo}\n"
+        return f"RESUMO DO CONTEXTO DA CONVERSA (gerado automaticamente):\n{resumo}\n", gerado_agora
 
     # Fallback: últimas 5 mensagens brutas
     janela_curta = historico[-5:]
-    linhas = []
-    for msg in janela_curta:
-        prefixo = "Usuário" if msg["remetente"] == "user" else "Sulivan"
-        linhas.append(f"{prefixo}: {msg['conteudo']}")
-    return "HISTÓRICO RECENTE DA CONVERSA:\n" + "\n".join(linhas) + "\n"
+    linhas = [
+        f"{'Usuário' if m['remetente'] == 'user' else 'Sulivan'}: {m['conteudo']}"
+        for m in janela_curta
+    ]
+    return "HISTÓRICO RECENTE DA CONVERSA:\n" + "\n".join(linhas) + "\n", False
 
 
 # ------------------------ MOTOR DE REGRAS ------------------------
 
-def processar_mensagem(mensagem: str, historico: list = None):
+def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
     if not isinstance(mensagem, str) or not mensagem.strip():
         return {"source": "erro", "resposta": "Informe uma mensagem válida."}
 
@@ -327,40 +382,63 @@ def processar_mensagem(mensagem: str, historico: list = None):
     # ---------------------- PIPELINE LLM ----------------------
 
     # Etapa 1 — Memória: gera o contexto (resumo ou fallback bruto)
-    contexto = montar_contexto(historico)
+    contexto, memoria_atualizada = montar_contexto(historico, n_total=n_total)
 
     # Etapa 2 — Resposta: gemma3:4b responde com o contexto comprimido
-    prompt_resposta = f"""Você é Sulivan, assistente virtual oficial da UniEVANGÉLICA.
+    prompt_resposta = f"""Você é Sullivan, assistente virtual oficial da UniEVANGÉLICA.
 
-REGRAS IMPORTANTES:
-- Responda apenas com informações seguras e verificadas.
+Seu papel é conversar com o usuário de forma natural, amigável e útil, mantendo um tom leve e acessível, como um atendente humano.
+
+OBJETIVO:
+- Ajudar o usuário com dúvidas gerais
+- Manter a conversa fluindo (pode puxar assunto quando fizer sentido)
+- Ser útil SEM inventar informações
+
+REGRAS CRÍTICAS (NUNCA QUEBRE):
 - NÃO invente informações.
-- NÃO adivinhe respostas.
-- Se não souber, diga claramente que não tem essa informação.
-- Use o contexto da conversa para manter coerência nas respostas.
-
-QUANDO TIVER DÚVIDA:
-- Oriente o aluno a procurar a secretaria da UniEVANGÉLICA.
+- NÃO crie números, datas, horários, e-mails, telefones ou links.
+- NÃO preencha lacunas com suposições.
+- Se não tiver certeza ou a informação não estiver no contexto:
+  → diga claramente que não sabe.
+  → oriente o usuário a procurar a secretaria da UniEVANGÉLICA.
+- Prefira admitir desconhecimento do que arriscar erro.
 
 COMPORTAMENTO:
-- Seja educado, claro e direto.
-- Use linguagem simples.
-- Responda em português do Brasil.
+- Seja educado, leve e direto.
+- Use linguagem simples (português do Brasil).
+- Pode puxar assunto leve se a conversa permitir (ex: rotina, estudos, etc).
+- Evite respostas robóticas.
+- Demonstre interesse genuíno na conversa.
 
+USO DE CONTEXTO:
+- Utilize o contexto fornecido para manter coerência.
+- NÃO extrapole além do que está no contexto.
+
+QUANDO NÃO SOUBER:
+Exemplo de resposta:
+"Não tenho essa informação com segurança. O ideal é você entrar em contato com a secretaria da UniEVANGÉLICA para te confirmarem certinho.
+
+ESTILO DE RESPOSTA:
+- Respostas curtas a médias (evite textão)
+- Natural, como conversa real
+- Sem listas formais, a não ser que necessário
+
+---
+
+CONTEXTO DA CONVERSA:
 {contexto}
-Pergunta atual do usuário:
+
+PERGUNTA DO USUÁRIO:
 {mensagem}
 
-Resposta:"""
+RESPOSTA:"""
 
     try:
-        resposta = call_llm(MODELO_RESPOSTA, prompt_resposta)
+        resposta = call_llm(MODELO_RESPOSTA, prompt_resposta, keep_alive= False)
         resposta_html = markdown.markdown(resposta)
 
-        # Verifica se o resumo foi recém-gerado nessa chamada
-        cache_atual, cache_gerado_em = _get_cache_resumo()
-        n_msgs_usuario = _contar_msgs_usuario(historico)
-        memoria_atualizada = (cache_atual is not None and cache_gerado_em == n_msgs_usuario)
+        # memoria_atualizada já vem direto do montar_contexto — sem gambiarra
+        cache_atual, _ = _get_cache_resumo()
 
         return {
             "source": "llm_small",
@@ -368,7 +446,8 @@ Resposta:"""
             "memoria_atualizada": memoria_atualizada,
             "resumo_memoria": cache_atual if memoria_atualizada else None,
         }
-    except Exception:
+    except Exception as e:
+        print(f"[RESPOSTA] ❌ ERRO no modelo: {e}") #se der ruim mostra o porque
         pass
 
     return {"source": "fallback", "resposta": random.choice(fallback)}
@@ -376,12 +455,13 @@ Resposta:"""
 
 # ------------------------ ENDPOINT FLASK ------------------------
 
-def chat(mensagem=None, historico=None):
+def chat(mensagem=None, historico=None, n_total: int = 0):
     """
     Função usada pelo Flask **ou** chamada direta pelo Kivy.
     historico: lista de dicts {remetente, conteudo} das últimas mensagens.
+    n_total: contador absoluto de mensagens do usuário na sessão (vem do app.py).
     """
     if has_request_context():
         data = request.get_json(silent=True) or {}
         mensagem = data.get("mensagem", "")
-    return processar_mensagem(mensagem, historico=historico)
+    return processar_mensagem(mensagem, historico=historico, n_total=n_total)

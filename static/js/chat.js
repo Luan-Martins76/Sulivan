@@ -32,9 +32,10 @@ function mostrarCard() {
   if (!_resumoAtual) return;
   resumoCard.textContent = _resumoAtual;
   resumoCard.style.display = 'block';
-  // posiciona abaixo da barra
-  resumoCard.style.top = (infoBar.offsetHeight + 6) + 'px';
-  resumoCard.style.left = '0';
+  // ✅ aparece ACIMA da barra
+  resumoCard.style.top    = '';           // limpa o top
+  resumoCard.style.bottom = 'calc(100% + 6px)';
+  resumoCard.style.left   = '0';
 }
 
 function esconderCard() {

@@ -82,13 +82,21 @@ def chat_endpoint():
     mensagem = request.json.get("mensagem")
     usuario_id = session.get("user_id")
 
-    # Busca as últimas 15 mensagens para o pipeline de memória
-    historico = carregar_historico(usuario_id, limite=15) if usuario_id else []
+    # Incrementa contador ANTES do chat (conta a mensagem atual)
+    if usuario_id:
+        from services.ia_service import _incrementar_contador
+        n_total = _incrementar_contador()
+    else:
+        n_total = 0
 
-    resposta_dict = chat(mensagem, historico=historico)
+    # Busca histórico e injeta mensagem atual
+    historico = carregar_historico(usuario_id, limite=15) if usuario_id else []
+    historico_com_atual = historico + [{"remetente": "user", "conteudo": mensagem}]
+
+    resposta_dict = chat(mensagem, historico=historico_com_atual, n_total=n_total)
     resposta = resposta_dict["resposta"] if isinstance(resposta_dict, dict) else resposta_dict
 
-    # Persiste a troca se o usuário estiver logado
+    # Persiste a troca
     if usuario_id:
         salvar_mensagem(usuario_id, "user", mensagem)
         salvar_mensagem(usuario_id, "bot", resposta)
