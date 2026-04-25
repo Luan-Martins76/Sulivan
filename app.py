@@ -9,8 +9,23 @@ from login.logica_login import (
     limpar_historico,
 )
 import os
+import tempfile
 
 load_dotenv()
+
+# Extensões permitidas — ajusta conforme necessário
+EXTENSOES_PERMITIDAS = {
+    "png", "jpg", "jpeg", "gif", "webp",   # imagens
+    "pdf",                                  # PDF
+    "docx",                                 # Word
+    "txt",                                  # texto puro
+}
+ 
+
+def extensao_permitida(filename: str) -> bool:
+    if not filename or "." not in filename:
+        return False
+    return filename.rsplit(".", 1)[1].lower() in EXTENSOES_PERMITIDAS
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -101,6 +116,67 @@ def chat_endpoint():
         salvar_mensagem(usuario_id, "user", mensagem)
         salvar_mensagem(usuario_id, "bot", resposta)
 
+    return jsonify({
+        "response": resposta,
+        "source": resposta_dict.get("source"),
+        "memoria_atualizada": resposta_dict.get("memoria_atualizada", False),
+        "resumo_memoria": resposta_dict.get("resumo_memoria"),
+    })
+
+@app.route("/chat/arquivo", methods=["POST"])
+def chat_arquivo_endpoint():
+    # multipart/form-data — mensagem vem do form, não do JSON
+    mensagem = request.form.get("mensagem", "").strip()
+    arquivo  = request.files.get("arquivo")
+    
+    print(f"[DEBUG] mensagem='{mensagem}' | arquivo={arquivo} | filename='{getattr(arquivo, 'filename', None)}'")
+    if not mensagem and not arquivo:
+        return jsonify({"error": "Envie uma mensagem ou um arquivo."}), 400
+ 
+    if arquivo and arquivo.filename and not extensao_permitida(arquivo.filename):
+        return jsonify({"error": "Tipo de arquivo não suportado."}), 415
+ 
+    usuario_id = session.get("user_id")
+ 
+    # Incrementa contador igual à rota /chat
+    if usuario_id:
+        from services.ia_service import _incrementar_contador
+        n_total = _incrementar_contador()
+    else:
+        n_total = 0
+ 
+    # Histórico igual à rota /chat
+    historico = carregar_historico(usuario_id, limite=15) if usuario_id else []
+    historico_com_atual = historico + [{"remetente": "user", "conteudo": mensagem}]
+ 
+    # Salva o arquivo em disco temporariamente
+    caminho_arquivo = None
+    if arquivo:
+        sufixo = "." + arquivo.filename.rsplit(".", 1)[1].lower()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=sufixo) as tmp:
+            arquivo.save(tmp)
+            caminho_arquivo = tmp.name
+ 
+    try:
+        resposta_dict = chat(
+            mensagem,
+            historico=historico_com_atual,
+            n_total=n_total,
+            arquivo=caminho_arquivo,
+            arquivo_mime=arquivo.mimetype if arquivo else None,
+        )
+    finally:
+        # Limpa o arquivo temporário independente de erro
+        if caminho_arquivo and os.path.exists(caminho_arquivo):
+            os.remove(caminho_arquivo)
+ 
+    resposta = resposta_dict["resposta"] if isinstance(resposta_dict, dict) else resposta_dict
+ 
+    # Persiste igual à rota /chat
+    if usuario_id:
+        salvar_mensagem(usuario_id, "user", mensagem)
+        salvar_mensagem(usuario_id, "bot", resposta)
+ 
     return jsonify({
         "response": resposta,
         "source": resposta_dict.get("source"),

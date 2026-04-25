@@ -6,12 +6,10 @@
     <link rel="stylesheet" href="../css/chat.css">
 </head>
 <style>
-
     html, body {
       width: 100%;
       height: 100%;
       background: transparent;
-  
     }
 
     body {
@@ -19,6 +17,186 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+    }
+
+    /* ── Botão de anexar ── */
+    #attachBtn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #7fff9a;
+      opacity: 0.6;
+      transition: opacity 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    #attachBtn:hover { opacity: 1; transform: scale(1.1); }
+
+    #attachBtn.has-file {
+      opacity: 1;
+      color: #39ff6a;
+      filter: drop-shadow(0 0 6px #39ff6a88);
+    }
+
+    /* ── Painel de upload (aparece acima do input) ── */
+    #upload-panel {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background: rgba(10, 20, 14, 0.92);
+      border: 1px solid rgba(57, 255, 106, 0.25);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 0 32px rgba(57, 255, 106, 0.1), 0 8px 32px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+      animation: slideUp 0.2s ease;
+    }
+
+    #upload-panel.open { display: flex; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Label de upload customizada ── */
+    .custum-file-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      border: 2px dashed rgba(57, 255, 106, 0.3);
+      border-radius: 12px;
+      padding: 24px 16px;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(57, 255, 106, 0.03);
+    }
+
+    .custum-file-upload:hover,
+    .custum-file-upload.drag-over {
+      border-color: rgba(57, 255, 106, 0.7);
+      background: rgba(57, 255, 106, 0.07);
+    }
+
+    .custum-file-upload .icon svg {
+      width: 40px;
+      height: 40px;
+      fill: rgba(57, 255, 106, 0.6);
+      transition: fill 0.2s, filter 0.2s;
+    }
+
+    .custum-file-upload:hover .icon svg {
+      fill: #39ff6a;
+      filter: drop-shadow(0 0 8px #39ff6a88);
+    }
+
+    .custum-file-upload .text span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: rgba(57, 255, 106, 0.7);
+      letter-spacing: 0.02em;
+    }
+
+    .custum-file-upload input[type="file"] {
+      display: none;
+    }
+
+    /* ── Preview do arquivo selecionado ── */
+    #file-preview {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(57, 255, 106, 0.07);
+      border: 1px solid rgba(57, 255, 106, 0.2);
+      border-radius: 10px;
+    }
+
+    #file-preview.visible { display: flex; }
+
+    #file-preview-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      display: none;
+      border: 1px solid rgba(57, 255, 106, 0.3);
+    }
+
+    #file-preview-icon {
+      font-size: 28px;
+      display: none;
+    }
+
+    #file-preview-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #file-preview-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #7fff9a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #file-preview-size {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(127, 255, 154, 0.5);
+      margin-top: 2px;
+    }
+
+    #file-remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,100,100,0.7);
+      font-size: 18px;
+      padding: 2px 4px;
+      transition: color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    #file-remove-btn:hover { color: #ff4444; transform: scale(1.15); }
+
+    /* ── Drag overlay na área de chat ── */
+    #drag-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 20, 14, 0.85);
+      border: 2px dashed rgba(57, 255, 106, 0.6);
+      border-radius: 16px;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      color: #39ff6a;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+    #drag-overlay.visible { display: flex; }
+
+    /* ── Wrapper do input com posição relativa ── */
+    .chat-input-area {
+      position: relative;
     }
   </style>
 <body>
@@ -39,6 +217,10 @@
               <span id="init-time"></span>
             </div>
           </header>
+
+          <!-- Drag overlay -->
+          <div id="drag-overlay">⬇ Solte o arquivo aqui</div>
+
           <div id="chatbox" aria-live="polite" aria-atomic="false"></div>
           <div class="info">
               <div class="info__icon">
@@ -49,15 +231,240 @@
           </div>
 
           <div class="chat-input-area">
+
+            <!-- Painel de upload (oculto por padrão) -->
+            <div id="upload-panel">
+              <label for="file" class="custum-file-upload" id="uploadLabel">
+                <div class="icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V9C19 9.55228 19.4477 10 20 10C20.5523 10 21 9.55228 21 9V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM14 15.5C14 14.1193 15.1193 13 16.5 13C17.8807 13 19 14.1193 19 15.5V16V17H20C21.1046 17 22 17.8954 22 19C22 20.1046 21.1046 21 20 21H13C11.8954 21 11 20.1046 11 19C11 17.8954 11.8954 17 13 17H14V16V15.5ZM16.5 11C14.142 11 12.2076 12.8136 12.0156 15.122C10.2825 15.5606 9 17.1305 9 19C9 21.2091 10.7909 23 13 23H20C22.2091 23 24 21.2091 24 19C24 17.1305 22.7175 15.5606 20.9844 15.122C20.7924 12.8136 18.858 11 16.5 11Z"/>
+                  </svg>
+                </div>
+                <div class="text"><span>Clique para anexar arquivo</span></div>
+                <input id="file" type="file" accept="image/*,.pdf,.txt,.csv,.json,.py,.js,.html,.css,.md" />
+              </label>
+
+              <!-- Preview aparece aqui depois de selecionar -->
+              <div id="file-preview">
+                <img id="file-preview-thumb" alt="preview" />
+                <span id="file-preview-icon"></span>
+                <div id="file-preview-info">
+                  <div id="file-preview-name"></div>
+                  <div id="file-preview-size"></div>
+                </div>
+                <button id="file-remove-btn" title="Remover arquivo">✕</button>
+              </div>
+            </div>
+
             <div class="input-wrapper">
+              <!-- Botão de anexar DENTRO do input-wrapper, antes do input de texto -->
+              <button id="attachBtn" title="Anexar arquivo" aria-label="Anexar arquivo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+              </button>
               <input type="text" id="userInput" placeholder="Digite sua mensagem para o Sulivan..." autocomplete="off" aria-label="Campo de mensagem" />
             </div>
-            <button id="sendBtn" onclick="chat.handleSendMessage()" aria-label="Enviar mensagem">➤</button>
+            <button id="sendBtn" onclick="uploadManager.handleSend()" aria-label="Enviar mensagem">➤</button>
           </div>
         </div>
       </div>
-    
-    
-</body>
+
+<script>
+// ── Upload Manager ────────────────────────────────────────────────
+const uploadManager = (() => {
+  let arquivoSelecionado = null;
+  let painelAberto = false;
+
+  const panel     = document.getElementById("upload-panel");
+  const attachBtn = document.getElementById("attachBtn");
+  const fileInput = document.getElementById("file");
+  const preview   = document.getElementById("file-preview");
+  const thumb     = document.getElementById("file-preview-thumb");
+  const icon      = document.getElementById("file-preview-icon");
+  const fname     = document.getElementById("file-preview-name");
+  const fsize     = document.getElementById("file-preview-size");
+  const removeBtn = document.getElementById("file-remove-btn");
+  const chatMain  = document.querySelector(".chat-main");
+  const dragOverlay = document.getElementById("drag-overlay");
+
+  // Extensões de imagem para mostrar thumbnail
+  const IMAGE_EXTS = ["jpg","jpeg","png","gif","webp","bmp","svg"];
+  const ICON_MAP   = { pdf:"📄", txt:"📝", csv:"📊", json:"🗂️", py:"🐍", js:"📜", html:"🌐", css:"🎨", md:"📋" };
+
+  function formatBytes(b) {
+    if (b < 1024) return b + " B";
+    if (b < 1024*1024) return (b/1024).toFixed(1) + " KB";
+    return (b/(1024*1024)).toFixed(1) + " MB";
+  }
+
+  function abrirPainel() {
+    painelAberto = true;
+    panel.classList.add("open");
+    attachBtn.style.opacity = "1";
+  }
+
+  function fecharPainel() {
+    painelAberto = false;
+    panel.classList.remove("open");
+  }
+
+  function togglePainel() {
+    painelAberto ? fecharPainel() : abrirPainel();
+  }
+
+  function definirArquivo(file) {
+    if (!file) return;
+    arquivoSelecionado = file;
+    attachBtn.classList.add("has-file");
+
+    // Mostra preview
+    preview.classList.add("visible");
+    fname.textContent = file.name;
+    fsize.textContent = formatBytes(file.size);
+
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (IMAGE_EXTS.includes(ext)) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        thumb.src = e.target.result;
+        thumb.style.display = "block";
+        icon.style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    } else {
+      thumb.style.display = "none";
+      icon.style.display = "block";
+      icon.textContent = ICON_MAP[ext] || "📎";
+    }
+
+    // Fecha o painel de seleção, mantém preview visível
+    fecharPainel();
+  }
+
+  function removerArquivo() {
+    arquivoSelecionado = null;
+    fileInput.value = "";
+    preview.classList.remove("visible");
+    thumb.src = "";
+    thumb.style.display = "none";
+    icon.style.display = "none";
+    attachBtn.classList.remove("has-file");
+  }
+
+  async function enviarParaRota(mensagem, arquivo) {
+    if (!arquivo) {
+      // Sem arquivo → usa rota normal do chat.js
+      return null;
+    }
+
+    const formData = new FormData();
+    formData.append("mensagem", mensagem);
+    formData.append("arquivo", arquivo);
+
+    const res = await fetch("/chat/arquivo", {
+      method: "POST",
+      body: formData, // browser coloca o boundary sozinho
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  }
+
+  async function handleSend() {
+    const input = document.getElementById("userInput");
+    const mensagem = input.value.trim();
+
+    if (!mensagem && !arquivoSelecionado) return;
+
+    if (!arquivoSelecionado) {
+      // Delega pro chat.js normalmente
+      chat.handleSendMessage();
+      return;
+    }
+
+    // Com arquivo → usa /chat/arquivo
+    input.value = "";
+    const arquivoAtual = arquivoSelecionado;
+    removerArquivo();
+
+    try {
+      const dados = await enviarParaRota(mensagem, arquivoAtual);
+      // Exibe no chatbox usando helper do chat.js se disponível
+      if (typeof chat !== "undefined" && chat.appendMessage) {
+        if (mensagem) chat.appendMessage("user", mensagem);
+        chat.appendMessage("bot", dados.response);
+      } else {
+        // Fallback simples
+        const chatbox = document.getElementById("chatbox");
+        if (mensagem) chatbox.innerHTML += `<div class="msg user">${mensagem}</div>`;
+        chatbox.innerHTML += `<div class="msg bot">${dados.response}</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+    } catch (err) {
+      console.error("Erro ao enviar arquivo:", err.message);
+      alert("Erro ao enviar arquivo: " + err.message);
+    }
+  }
+
+  // ── Drag & Drop na área de chat ──────────────────────────────
+  let dragCounter = 0;
+
+  chatMain.addEventListener("dragenter", e => {
+    e.preventDefault();
+    dragCounter++;
+    dragOverlay.classList.add("visible");
+  });
+
+  chatMain.addEventListener("dragleave", () => {
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      dragOverlay.classList.remove("visible");
+    }
+  });
+
+  chatMain.addEventListener("dragover", e => e.preventDefault());
+
+  chatMain.addEventListener("drop", e => {
+    e.preventDefault();
+    dragCounter = 0;
+    dragOverlay.classList.remove("visible");
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      abrirPainel();
+      definirArquivo(file);
+    }
+  });
+
+  // ── Fecha painel clicando fora ───────────────────────────────
+  document.addEventListener("click", e => {
+    if (painelAberto && !panel.contains(e.target) && e.target !== attachBtn && !attachBtn.contains(e.target)) {
+      fecharPainel();
+    }
+  });
+
+  // ── Eventos ─────────────────────────────────────────────────
+  attachBtn.addEventListener("click", togglePainel);
+  fileInput.addEventListener("change", e => definirArquivo(e.target.files[0]));
+  removeBtn.addEventListener("click", e => { e.stopPropagation(); removerArquivo(); });
+
+  // Enter no input também aciona handleSend
+  document.getElementById("userInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  return { handleSend, removerArquivo };
+})();
+</script>
+
 <script src="/static/js/chat.js"></script>
 </html>

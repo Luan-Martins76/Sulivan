@@ -5,17 +5,38 @@ import markdown
 import unicodedata
 import random
 import requests
+import os
+import mimetypes
+import base64
+
+# Dependências multimodal — opcionais, não quebra se não instalado. Mas é bom instalar néhh, coloquei multimodal atoa? kkkkkk
+try:
+    import easyocr
+    _ocr_reader = easyocr.Reader(['pt'], gpu=False)
+except ImportError:
+    _ocr_reader = None
+
+try:
+    import pdfplumber
+except ImportError:
+    pdfplumber = None
+
+try:
+    from docx import Document as DocxDocument
+except ImportError:
+    DocxDocument = None
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 REQUEST_TIMEOUT_SECONDS = 20
 MEMORY_TIMEOUT_SECONDS  = 180   # memória pode ser mais lenta, timeout separado
 
-# ✅ Papéis dos modelos
+#  Papéis dos modelos
 MODELO_MEMORIA   = "mistral-nemo:12b"   # Responsável por resumir o histórico
 MODELO_RESPOSTA  = "gemma3:4b"          # Responsável por responder ao usuário
+MODELO_VISAO     = "llava-llama3"           # Responsável por interpretar imagens
 
-# ✅ Configurações do pipeline de memória
-HISTORICO_MEMORIA_MAX  = 15  # Quantas mensagens passadas o modelo de memória lê
+#  Configurações do pipeline de memória
+HISTORICO_MEMORIA_MAX  = 20  # Quantas mensagens passadas o modelo de memória lê
 RESUMO_MINIMO_MSGS     = 4   # Abaixo disso não vale o custo de resumir
 
 
@@ -213,9 +234,12 @@ def gerar_resumo_memoria(historico: list, n_total: int = 0) -> tuple[str | None,
 
     cache_atual, cache_gerado_em = _get_cache_resumo()
     msgs_desde_ultimo_resumo = n_total - cache_gerado_em
-    
-    # ✅ Ainda dentro do intervalo — devolve o cache sem chamar o modelo
+
+    print(f"[MEMORIA] n_total={n_total} | cache_em={cache_gerado_em} | desde_ultimo={msgs_desde_ultimo_resumo} | cache_existe={cache_atual is not None}")
+
+    #  Ainda dentro do intervalo — devolve o cache sem chamar o modelo
     if cache_atual and msgs_desde_ultimo_resumo < RESUMO_INTERVALO_MSGS:
+        print("[MEMORIA] → usando cache, não regenera")
         return cache_atual, False  # ← False: não foi gerado agora
 
     # Chegou a hora de regenerar
@@ -279,7 +303,7 @@ RESUMO DO CONTEXTO:"""
             return resumo, True  # ← True: acabou de gerar agora
         return None, False
     except Exception as e:
-        print(f"[MEMORIA] ❌ ERRO no modelo: {e}") #se der ruim mostra o porque
+        print(f"[MEMORIA] ❌ ERRO no modelo: {e}")  # se der ruim mostra o porque
         return cache_atual or None, False
 
 
@@ -307,16 +331,178 @@ def montar_contexto(historico: list, n_total: int = 0) -> tuple[str, bool]:
     return "HISTÓRICO RECENTE DA CONVERSA:\n" + "\n".join(linhas) + "\n", False
 
 
-# ------------------------ MOTOR DE REGRAS ------------------------
+# ------------------------ MULTIMODAL ------------------------
 
-def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
+def call_llm_visao(imagem_path: str, prompt: str) -> str:
+    """
+    Chama o modelo de visão (llava) via Ollama com a imagem em base64.
+    Retorna a descrição gerada ou string vazia se falhar.
+    """
+    try:
+        with open(imagem_path, "rb") as f:
+            imagem_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": MODELO_VISAO,
+                "prompt": prompt,
+                "images": [imagem_b64],
+                "stream": False,
+                "options": {"temperature": 0.2},
+                "keep_alive": 0,  # descarrega após uso pra não brigar com gemma/mistral/llava
+            },
+            timeout=180,
+        )
+        
+        response.raise_for_status()
+        resultado = response.json().get("response", "").strip()
+        print(f"[VISAO]  descrição gerada ({len(resultado)} chars): '{resultado[:80]}'")
+        return resultado
+        
+    except Exception as e:
+        print(f"[VISAO]  ERRO no modelo: {e}")
+        return ""
+
+
+def ocr_imagem(imagem_path: str) -> str:
+    """Extrai texto de imagem via EasyOCR."""
+    if not _ocr_reader:
+        print("[MULTIMODAL]  EasyOCR não instalado.")
+        return ""
+    try:
+        resultado = _ocr_reader.readtext(imagem_path, detail=0)
+        return "\n".join(resultado).strip()
+    except Exception as e:
+        print(f"[MULTIMODAL]  Erro OCR: {e}")
+        return ""
+
+
+def extrair_texto_pdf(pdf_path: str) -> str:
+    """Extrai texto de PDF via pdfplumber."""
+    if not pdfplumber:
+        print("[MULTIMODAL]  pdfplumber não instalado.")
+        return ""
+    texto = ""
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            for pagina in pdf.pages:
+                texto += (pagina.extract_text() or "") + "\n"
+    except Exception as e:
+        print(f"[MULTIMODAL]  Erro PDF: {e}")
+    return texto.strip()
+
+
+def extrair_texto_docx(docx_path: str) -> str:
+    """Extrai texto de arquivo Word (.docx)."""
+    if not DocxDocument:
+        print("[MULTIMODAL]  python-docx não instalado.")
+        return ""
+    try:
+        doc = DocxDocument(docx_path)
+        return "\n".join([p.text for p in doc.paragraphs]).strip()
+    except Exception as e:
+        print(f"[MULTIMODAL]  Erro DOCX: {e}")
+        return ""
+
+
+def texto_valido(texto: str) -> bool:
+    """Heurística simples: texto com pelo menos 30 chars e espaços."""
+    if not texto:
+        return False
+    texto = texto.strip()
+    return len(texto) >= 30 and " " in texto
+
+
+def processar_arquivo(caminho_arquivo: str, mensagem_usuario: str = "", mime_hint: str = None) -> str:
+    """
+    Processa o arquivo enviado pelo usuário e retorna um bloco de contexto
+    pronto pra ser injetado no prompt principal.
+    """
+    mime, _ = mimetypes.guess_type(caminho_arquivo)
+    mime = mime_hint or mime or ""  # ← prioriza o mime vindo do Flask
+    print(f"[MULTIMODAL] Processando arquivo: {os.path.basename(caminho_arquivo)} | mime: {mime}")
+
+    # 🖼️ IMAGENS
+    if mime.startswith("image"):
+        texto_ocr = ocr_imagem(caminho_arquivo)
+        if texto_valido(texto_ocr):
+            print("[MULTIMODAL]  OCR com sucesso")
+            return f"O usuário enviou uma imagem com texto.\n\nConteúdo extraído:\n{texto_ocr}\n\nPergunta do usuário:\n{mensagem_usuario}"
+
+        # fallback: modelo de visão
+        print("[MULTIMODAL] OCR insuficiente, usando modelo de visão...")
+        descricao = call_llm_visao(
+            caminho_arquivo,
+            prompt="Analise a imagem enviada por um aluno. Extraia textos visíveis, datas, horários, nomes de disciplinas e locais. Se não houver texto relevante, descreva brevemente o que há na imagem."
+        )
+        if descricao:
+            return f"O usuário enviou uma imagem.\n\nDescrição:\n{descricao}\n\nPergunta do usuário:\n{mensagem_usuario}"
+        return f"O usuário enviou uma imagem, mas não foi possível interpretá-la.\n\nPergunta do usuário:\n{mensagem_usuario}"
+
+    #  PDF
+    elif mime == "application/pdf":
+        texto = extrair_texto_pdf(caminho_arquivo)
+        if texto_valido(texto):
+            return f"O usuário enviou um PDF.\n\nConteúdo:\n{texto}\n\nPergunta do usuário:\n{mensagem_usuario}"
+
+        # fallback OCR: converte páginas pra imagem primeiro
+        try:
+            from pdf2image import convert_from_path
+            imagens = convert_from_path(caminho_arquivo)
+            textos_ocr = []
+            for img in imagens:
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    img.save(tmp.name)
+                    t = ocr_imagem(tmp.name)
+                    os.unlink(tmp.name)
+                    if t:
+                        textos_ocr.append(t)
+            texto_ocr = "\n".join(textos_ocr)
+            if texto_valido(texto_ocr):
+                return f"O usuário enviou um PDF escaneado.\n\nConteúdo via OCR:\n{texto_ocr}\n\nPergunta do usuário:\n{mensagem_usuario}"
+        except ImportError:
+            print("[MULTIMODAL] ⚠️ pdf2image não instalado, OCR em PDF indisponível.")
+
+        return f"O usuário enviou um PDF, mas não foi possível extrair texto.\n\nPergunta do usuário:\n{mensagem_usuario}"
+
+    #  DOCX
+    elif "wordprocessingml" in mime:
+        texto = extrair_texto_docx(caminho_arquivo)
+        if texto_valido(texto):  
+            return f"O usuário enviou um documento Word.\n\nConteúdo:\n{texto}\n\nPergunta do usuário:\n{mensagem_usuario}"
+        return f"O usuário enviou um documento Word, mas não foi possível extrair texto.\n\nPergunta do usuário:\n{mensagem_usuario}"
+    
+    # TXT
+    elif mime.startswith("text"):
+        try:
+            with open(caminho_arquivo, "r", encoding="utf-8") as f:
+                texto = f.read()
+            return f"O usuário enviou um arquivo de texto.\n\nConteúdo:\n{texto}\n\nPergunta do usuário:\n{mensagem_usuario}"
+        except Exception as e:
+            print(f"[MULTIMODAL] ❌ Erro lendo TXT: {e}")
+
+    # fallback
+    return f"O usuário enviou um arquivo não suportado: {os.path.basename(caminho_arquivo)}\n\nPergunta do usuário:\n{mensagem_usuario}"
+
+
+#  MOTOR DE REGRAS 
+
+def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0, arquivo: str = None, arquivo_mime=None):
     if not isinstance(mensagem, str) or not mensagem.strip():
         return {"source": "erro", "resposta": "Informe uma mensagem válida."}
 
     mensagem = mensagem.strip().lower()
     historico = historico or []
 
-    # --- AGENDA ---
+    #  ARQUIVO ENVIADO 
+    contexto_arquivo = ""
+    if arquivo:
+        print(f"[MULTIMODAL] Arquivo recebido: {arquivo}")
+        contexto_arquivo = processar_arquivo(arquivo, mensagem_usuario=mensagem, mime_hint=arquivo_mime)
+
+    #  AGENDA 
     dia_encontrado = resolve_day(mensagem)
     if dia_encontrado:
         aula = agenda[dia_encontrado]
@@ -327,11 +513,11 @@ def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
         )
         return {"source": "regras", "resposta": resposta}
 
-    # --- CRIADOR ---
+    #  CRIADOR 
     if "criador" in mensagem:
         return {"source": "regras", "resposta": "Martins 😀. Olha o instagram do man: luan_henrique76l"}
 
-    # --- CURSOS ---
+    #  CURSOS 
     if "curso" in mensagem:
         cursos_json = dados.get("cursos", {})
         campus_map = {
@@ -342,7 +528,7 @@ def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
             if termo in mensagem:
                 return {"source": "regras", "resposta": formatar_cursos(dados, termo)}
 
-    # --- MATERIAS ---
+    #  MATERIAS 
     if "materia" in mensagem or "disciplina" in mensagem:
         materias_json = dados.get("materias", {})
         curso_map = {
@@ -353,11 +539,11 @@ def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
             if termo in mensagem:
                 return {"source": "regras", "resposta": formatar_materia(dados, chave_real)}
 
-    # --- NOME ---
+    # NOME 
     if "nome" in mensagem and ("seu" in mensagem or "qual" in mensagem):
         return {"source": "regras", "resposta": "Meu nome é Sulivan 😉"}
 
-    # --- CALENDÁRIO ---
+    #  CALENDÁRIO 
     if "calendario" in mensagem or "evento" in mensagem or "feriado" in mensagem:
         calendario_json = dados.get("calendario", {})
         campus_map = {
@@ -379,12 +565,14 @@ def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0):
             mes_encontrado = next((m for m in meses if m in mensagem), None)
             return {"source": "regras", "resposta": formatar_calendario(dados, campus_encontrado, mes_encontrado)}
 
-    # ---------------------- PIPELINE LLM ----------------------
+    # PIPELINE LLM 
 
     # Etapa 1 — Memória: gera o contexto (resumo ou fallback bruto)
     contexto, memoria_atualizada = montar_contexto(historico, n_total=n_total)
 
     # Etapa 2 — Resposta: gemma3:4b responde com o contexto comprimido
+    secao_arquivo = f"\nARQUIVO ENVIADO PELO USUÁRIO:\n{contexto_arquivo}\n" if contexto_arquivo else ""
+
     prompt_resposta = f"""Você é Sullivan, assistente virtual oficial da UniEVANGÉLICA.
 
 Seu papel é conversar com o usuário de forma natural, amigável e útil, mantendo um tom leve e acessível, como um atendente humano.
@@ -413,9 +601,11 @@ COMPORTAMENTO:
 USO DE CONTEXTO:
 - Utilize o contexto fornecido para manter coerência.
 - NÃO extrapole além do que está no contexto.
+- Se o usuário enviou um arquivo, o conteúdo dele é sua fonte principal de resposta. Use-o diretamente.
 
 QUANDO NÃO SOUBER:
-Exemplo de resposta:
+-Mande um resumo do que recebeu do arquivo do usuário.
+Exemplo de resposta caso não tiver arquivo do usuário:
 "Não tenho essa informação com segurança. O ideal é você entrar em contato com a secretaria da UniEVANGÉLICA para te confirmarem certinho.
 
 ESTILO DE RESPOSTA:
@@ -424,6 +614,8 @@ ESTILO DE RESPOSTA:
 - Sem listas formais, a não ser que necessário
 
 ---
+ARQUIVO DO USUARIO JÁ PROCESSADO:
+{secao_arquivo}
 
 CONTEXTO DA CONVERSA:
 {contexto}
@@ -434,7 +626,7 @@ PERGUNTA DO USUÁRIO:
 RESPOSTA:"""
 
     try:
-        resposta = call_llm(MODELO_RESPOSTA, prompt_resposta, keep_alive= False)
+        resposta = call_llm(MODELO_RESPOSTA, prompt_resposta, keep_alive=False)
         resposta_html = markdown.markdown(resposta)
 
         # memoria_atualizada já vem direto do montar_contexto — sem gambiarra
@@ -447,21 +639,15 @@ RESPOSTA:"""
             "resumo_memoria": cache_atual if memoria_atualizada else None,
         }
     except Exception as e:
-        print(f"[RESPOSTA] ❌ ERRO no modelo: {e}") #se der ruim mostra o porque
+        print(f"[RESPOSTA] ERRO no modelo: {e}")  # se der ruim mostra o porque
         pass
 
     return {"source": "fallback", "resposta": random.choice(fallback)}
 
 
-# ------------------------ ENDPOINT FLASK ------------------------
-
-def chat(mensagem=None, historico=None, n_total: int = 0):
-    """
-    Função usada pelo Flask **ou** chamada direta pelo Kivy.
-    historico: lista de dicts {remetente, conteudo} das últimas mensagens.
-    n_total: contador absoluto de mensagens do usuário na sessão (vem do app.py).
-    """
-    if has_request_context():
+# ENDPOINT FLASK
+def chat(mensagem=None, historico=None, n_total: int = 0, arquivo: str = None, arquivo_mime=None):
+    if has_request_context() and request.is_json:  # ← adiciona o is_json
         data = request.get_json(silent=True) or {}
         mensagem = data.get("mensagem", "")
-    return processar_mensagem(mensagem, historico=historico, n_total=n_total)
+    return processar_mensagem(mensagem, historico=historico, n_total=n_total, arquivo=arquivo, arquivo_mime=arquivo_mime)
