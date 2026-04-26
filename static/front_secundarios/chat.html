@@ -353,63 +353,116 @@ const uploadManager = (() => {
     attachBtn.classList.remove("has-file");
   }
 
-  async function enviarParaRota(mensagem, arquivo) {
-    if (!arquivo) {
-      // Sem arquivo → usa rota normal do chat.js
-      return null;
-    }
-
-    const formData = new FormData();
-    formData.append("mensagem", mensagem);
-    formData.append("arquivo", arquivo);
-
-    const res = await fetch("/chat/arquivo", {
-      method: "POST",
-      body: formData, // browser coloca o boundary sozinho
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-
-    return await res.json();
-  }
-
   async function handleSend() {
     const input = document.getElementById("userInput");
     const mensagem = input.value.trim();
 
     if (!mensagem && !arquivoSelecionado) return;
 
+    // Sem arquivo → delega pro fluxo normal do chat.js
     if (!arquivoSelecionado) {
-      // Delega pro chat.js normalmente
       chat.handleSendMessage();
       return;
     }
 
-    // Com arquivo → usa /chat/arquivo
+    // Bloqueia duplo envio
+    if (chat.isAwaitingResponse) return;
+
+    // ── Captura tudo antes de limpar o estado ──────────────────
     input.value = "";
     const arquivoAtual = arquivoSelecionado;
+    const nomeArquivo  = arquivoAtual.name;
+    const ext          = nomeArquivo.split(".").pop().toLowerCase();
+    const isImage      = IMAGE_EXTS.includes(ext);
+    const icone        = ICON_MAP[ext] || "📎";
+
+    // Gera dataURL antes de perder a referência do arquivo
+    let dataUrl = null;
+    if (isImage) {
+      dataUrl = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(arquivoAtual);
+      });
+    }
+
     removerArquivo();
 
+    // ── Garante sessão ativa ────────────────────────────────────
+    if (!chat.activeSessionId) chat.startNewSession();
+
+    // ── 1. Bolha do usuário ─────────────────────────────────────
+    const userTime = Utils.now();
+    const chatbox  = document.getElementById("chatbox");
+
+    chatbox.insertAdjacentHTML("beforeend",
+      chat.buildMessageHtml("user", mensagem || "\u200b", null, userTime)
+    );
+
+    // Injeta o arquivo dentro da .message.user-message recem criada
+    const attachHtml = isImage
+      ? `<div class="msg-attachment" style="margin-top:8px">
+           <img src="${dataUrl}" alt="${Utils.escapeHtml(nomeArquivo)}"
+                style="max-width:180px;max-height:140px;border-radius:8px;display:block;border:1px solid rgba(57,255,106,0.25)"/>
+           <span style="font-size:11px;opacity:0.6;display:block;margin-top:4px;font-family:'JetBrains Mono',monospace">
+             ${Utils.escapeHtml(nomeArquivo)}
+           </span>
+         </div>`
+      : `<div class="msg-attachment"
+              style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 10px;
+                     background:rgba(57,255,106,0.07);border:1px solid rgba(57,255,106,0.2);
+                     border-radius:8px;font-size:12px;font-family:'JetBrains Mono',monospace;color:#7fff9a">
+           <span>${icone}</span>
+           <span>${Utils.escapeHtml(nomeArquivo)}</span>
+         </div>`;
+
+    const ultimaBolha = [...chatbox.querySelectorAll(".message.user-message")].at(-1);
+    if (ultimaBolha) ultimaBolha.insertAdjacentHTML("beforeend", attachHtml);
+
+    chat.currentMessages.push({ who: "user", text: mensagem || "[arquivo]", time: userTime });
+
+    // ── 2. Loading ──────────────────────────────────────────────
+    chat.setLoadingState(true);
+    chat.showTypingIndicator();
+
+    // ── 3. Requisição ───────────────────────────────────────────
     try {
-      const dados = await enviarParaRota(mensagem, arquivoAtual);
-      // Exibe no chatbox usando helper do chat.js se disponível
-      if (typeof chat !== "undefined" && chat.appendMessage) {
-        if (mensagem) chat.appendMessage("user", mensagem);
-        chat.appendMessage("bot", dados.response);
-      } else {
-        // Fallback simples
-        const chatbox = document.getElementById("chatbox");
-        if (mensagem) chatbox.innerHTML += `<div class="msg user">${mensagem}</div>`;
-        chatbox.innerHTML += `<div class="msg bot">${dados.response}</div>`;
-        chatbox.scrollTop = chatbox.scrollHeight;
-      }
+      const formData = new FormData();
+      formData.append("mensagem", mensagem);
+      formData.append("arquivo", arquivoAtual);
+      if (chat.activeSessionId) formData.append("session_id", chat.activeSessionId);
+
+      const res = await fetch("/chat/arquivo", { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      chat.removeTypingIndicator();
+
+      const botText   = data.response?.trim() || "⚠️ Não consegui entender a resposta.";
+      const botSource = typeof data.source === "string" ? data.source : null;
+      const botTime   = Utils.now();
+
+      chatbox.insertAdjacentHTML("beforeend",
+        chat.buildMessageHtml("bot", botText, botSource, botTime)
+      );
+      chat.currentMessages.push({ who: "bot", text: botText, source: botSource, time: botTime });
+
+      atualizarMemoria(data);
+
     } catch (err) {
+      chat.removeTypingIndicator();
       console.error("Erro ao enviar arquivo:", err.message);
-      alert("Erro ao enviar arquivo: " + err.message);
+      const errText = `❌ Erro ao processar o arquivo: ${err.message}`;
+      const botTime = Utils.now();
+      chatbox.insertAdjacentHTML("beforeend",
+        chat.buildMessageHtml("bot", errText, null, botTime)
+      );
+      chat.currentMessages.push({ who: "bot", text: errText, time: botTime });
     }
+
+    chat.setLoadingState(false);
+    chat.scrollToBottom();
+    await chat.saveCurrentSession();
   }
 
   // ── Drag & Drop na área de chat ──────────────────────────────
