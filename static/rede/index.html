@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xera · social</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       TELA DE AUTH
+  ══════════════════════════════════════ -->
+  <div id="auth-screen" class="screen auth-screen">
+
+    <!-- Fundo estrelado -->
+    <div id="stars-container" class="stars-container"></div>
+    <div class="glow glow-blue"></div>
+    <div class="glow glow-purple"></div>
+
+    <!-- Card de login/registro -->
+    <div class="auth-card card-float">
+      <div class="auth-header">
+        <div class="logo-big"><span class="accent">x</span>era</div>
+        <div id="auth-subtitle" class="auth-subtitle">entre na sua conta</div>
+      </div>
+
+      <div class="auth-fields">
+        <input id="auth-name" class="field" type="text" placeholder="Seu nome" style="display:none" />
+        <input id="auth-email" class="field" type="email" placeholder="Email" />
+        <input id="auth-password" class="field" type="password" placeholder="Senha" />
+        <div id="auth-error" class="auth-error"></div>
+        <button id="auth-btn" class="btn-primary">Entrar</button>
+      </div>
+
+      <div class="auth-toggle">
+        <span id="auth-toggle-text">Não tem conta? </span>
+        <span id="auth-toggle-link" class="link">Cadastre-se</span>
+      </div>
+
+      <!-- Contas demo -->
+      <div class="demo-box">
+        <div class="demo-label">contas de demo</div>
+        <div id="demo-accounts"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       APP PRINCIPAL
+  ══════════════════════════════════════ -->
+  <div id="app-screen" class="screen app-screen" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+      <div class="logo"><span class="accent">x</span>era</div>
+
+      <nav class="nav">
+        <div id="nav-feed" class="nav-item active" data-view="feed">
+          <span class="nav-icon">⊟</span> Feed
+        </div>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="section-label">Usuários · <span id="user-count">0</span></div>
+        <div id="user-list" class="user-list"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div id="footer-avatar" class="avatar-wrap"></div>
+        <div class="footer-info">
+          <div id="footer-name" class="footer-name"></div>
+          <div class="footer-status">online</div>
+        </div>
+        <div id="logout-btn" class="logout-btn" title="Sair">⏻</div>
+      </div>
+    </aside>
+
+    <!-- FEED -->
+    <main id="feed-col" class="feed-col">
+
+      <!-- Profile header (oculto por padrão) -->
+      <div id="profile-header" class="profile-header" style="display:none">
+        <div id="back-btn" class="back-btn">← voltar ao feed</div>
+        <div class="profile-info">
+          <div id="profile-avatar" class="avatar-wrap"></div>
+          <div>
+            <div id="profile-name" class="profile-name"></div>
+            <div id="profile-meta" class="profile-meta"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed title -->
+      <div id="feed-title" class="feed-title">
+        Feed <span id="post-count" class="post-count-badge">0 posts</span>
+      </div>
+
+      <!-- Compositor -->
+      <div id="composer" class="composer card">
+        <div class="composer-inner">
+          <div id="composer-avatar" class="avatar-wrap"></div>
+          <div class="composer-right">
+            <textarea id="new-post-input" class="composer-textarea" placeholder="No que você está pensando?"></textarea>
+            <div class="composer-footer">
+              <span class="composer-hint">Ctrl+Enter para publicar</span>
+              <button id="publish-btn" class="btn-publish" disabled>Publicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de posts -->
+      <div id="empty-state" class="empty-state" style="display:none">
+        Nenhum post ainda. Seja o primeiro! ☝️
+      </div>
+      <div id="posts-list" class="posts-list"></div>
+
+      <div style="height:48px"></div>
+    </main>
+
+    <!-- PAINEL DIREITO -->
+    <aside class="right-panel">
+      <div class="section-label" style="margin-bottom:12px">Seu perfil</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div id="stat-posts" class="stat-val">0</div>
+          <div class="stat-label">Posts</div>
+        </div>
+        <div class="stat-card">
+          <div id="stat-likes" class="stat-val">0</div>
+          <div class="stat-label">Curtidas</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; flex:1; overflow:hidden; display:flex; flex-direction:column;">
+        <div class="section-label" style="margin-bottom:12px">Mais curtidos</div>
+        <div id="top-posts" class="top-posts-list"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Template de post (clonado via JS) -->
+  <template id="post-tpl">
+    <div class="post card">
+      <div class="post-header">
+        <div class="post-avatar avatar-wrap clickable"></div>
+        <div class="post-meta">
+          <div class="post-author-row">
+            <span class="post-author clickable"></span>
+            <span class="post-you-badge" style="display:none">você</span>
+          </div>
+          <div class="post-time"></div>
+        </div>
+      </div>
+      <div class="post-message"></div>
+      <div class="post-actions">
+        <button class="action-btn like-btn">
+          <span class="like-icon">♡</span>
+          <span class="like-count">0</span>
+        </button>
+        <button class="action-btn cmt-btn">
+          <span>💬</span>
+          <span class="cmt-count">0</span>
+        </button>
+      </div>
+      <div class="comments-section" style="display:none">
+        <div class="comments-list"></div>
+        <div class="comment-input-row">
+          <div class="cmt-avatar avatar-wrap"></div>
+          <input class="cmt-input field-small" type="text" placeholder="Escreva um comentário... (Enter)" />
+          <button class="btn-send">↑</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

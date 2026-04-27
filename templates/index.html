@@ -23,7 +23,10 @@
     </section>
 
     <section id="view-login" class="view-section" aria-label="Área de login">
-     <p>concertando coisas</p>
+    <iframe
+        src="{{ url_for('static', filename='rede/index.html') }}"
+        style="position:absolute; inset:0; width:100%; height:100%; border:none; z-index:0;">
+      </iframe> 
     </section>
 
     <section id="view-chat" class="view-section" aria-label="Área de Chat">
@@ -47,6 +50,12 @@
       </iframe>
     </section>
 
+    <section id="view-tarefas" class="view-section" aria-label="AVA - UNI">
+          <iframe
+            src="{{ url_for('static', filename='fucusapk/index.html') }}"
+            style="position:absolute; inset:0; width:100%; height:100%; border:none; z-index:0;">
+          </iframe>
+        </section>    
 
   </main>
 

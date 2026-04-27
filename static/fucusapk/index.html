@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusStudy — Estude com intenção</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">F</div>
+      <span class="logo-text">Focus<strong>Study</strong></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-view="dashboard" title="Dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-item" data-view="session" title="Sessão">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Sessão</span>
+      </a>
+      <a class="nav-item" data-view="materials" title="Materiais">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>Materiais</span>
+      </a>
+      <a class="nav-item" data-view="progress" title="Progresso">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Progresso</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="streak-badge">
+        <span class="streak-fire">🔥</span>
+        <div>
+          <div class="streak-number" id="sidebar-streak">7</div>
+          <div class="streak-label">dias seguidos</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main-content">
+
+    <!-- ─── VIEW: DASHBOARD ─── -->
+    <section id="view-dashboard" class="view active">
+      <header class="view-header">
+        <div>
+          <p class="view-greeting" id="greeting-text">Bom dia</p>
+          <h1 class="view-title">O que você vai dominar hoje?</h1>
+        </div>
+        <div class="header-date" id="header-date"></div>
+      </header>
+
+      <!-- SETUP: Energy + Time -->
+      <div class="setup-grid">
+        <div class="setup-card">
+          <div class="setup-card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Nível de energia agora
+          </div>
+          <div class="energy-btns">
+            <button class="energy-btn" data-energy="high">
+              <span class="energy-emoji">⚡</span> Alto
+            </button>
+            <button class="energy-btn" data-energy="medium">
+              <span class="energy-emoji">🔆</span> Médio
+            </button>
+            <button class="energy-btn" data-energy="low">
+              <span class="energy-emoji">🌙</span> Baixo
+            </button>
+          </div>
+        </div>
+
+        <div class="setup-card">
+          <div class="setup-card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Tempo disponível
+          </div>
+          <div class="time-btns">
+            <button class="time-btn" data-time="15">15 min</button>
+            <button class="time-btn" data-time="30">30 min</button>
+            <button class="time-btn" data-time="60">1 hora</button>
+            <button class="time-btn" data-time="120">2h+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECOMMENDED SESSION -->
+      <div class="recommended-card" id="recommended-card">
+        <div class="rec-card-inner">
+          <div class="rec-card-badge">IA Recomenda</div>
+          <h2 class="rec-card-title" id="rec-title">Selecione sua energia e tempo disponível</h2>
+          <p class="rec-card-desc" id="rec-desc">O FocusStudy vai montar a sessão perfeita para você agora.</p>
+          <div class="rec-card-meta" id="rec-meta"></div>
+          <button class="btn-start" id="btn-start-session" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Iniciar Sessão
+          </button>
+        </div>
+        <div class="rec-card-visual">
+          <div class="brain-graphic">🧠</div>
+        </div>
+      </div>
+
+      <!-- STATS ROW -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-mastered">142</div>
+          <div class="stat-label">Cards dominados</div>
+          <div class="stat-trend up">↑ 12 esta semana</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-retention">78<span>%</span></div>
+          <div class="stat-label">Taxa de retenção</div>
+          <div class="stat-trend up">↑ 5% vs semana passada</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-sessions">23</div>
+          <div class="stat-label">Sessões completas</div>
+          <div class="stat-trend neutral">→ Este mês</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value danger" id="stat-weak">8</div>
+          <div class="stat-label">Pontos fracos</div>
+          <div class="stat-trend down">3 precisam de atenção</div>
+        </div>
+      </div>
+
+      <!-- SUBJECTS PREVIEW -->
+      <div class="section-header">
+        <h2 class="section-title">Suas Matérias</h2>
+        <button class="link-btn" data-goto="materials">Ver todas →</button>
+      </div>
+      <div class="subjects-grid" id="subjects-grid-dash">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ─── VIEW: SESSION ─── -->
+    <section id="view-session" class="view">
+      <div class="session-layout" id="session-layout">
+
+        <!-- SESSION SETUP (before start) -->
+        <div id="session-setup-screen">
+          <div class="session-ready-msg">
+            <div class="ready-icon">🎯</div>
+            <h2>Pronto para focar?</h2>
+            <p>Configure uma sessão no Dashboard ou inicie um estudo rápido agora.</p>
+            <button class="btn-start" id="btn-quick-start">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Sessão Rápida (25 min)
+            </button>
+          </div>
+        </div>
+
+        <!-- ACTIVE SESSION -->
+        <div id="session-active-screen" class="hidden">
+
+          <!-- Session Header -->
+          <div class="session-header">
+            <div class="session-info">
+              <div class="session-subject-tag" id="sess-subject-tag">Matemática</div>
+              <div class="session-phase-label" id="sess-phase-label">Sessão de Estudo</div>
+            </div>
+            <div class="session-progress-bar-wrap">
+              <div class="session-progress-bar" id="sess-progress-bar"></div>
+            </div>
+            <div class="session-card-count" id="sess-card-count">1 / 10</div>
+            <button class="btn-pause" id="btn-pause-session">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Timer -->
+          <div class="session-timer-wrap">
+            <svg class="timer-ring" viewBox="0 0 120 120">
+              <circle class="timer-ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="timer-ring-fill" id="timer-ring-fill" cx="60" cy="60" r="52"/>
+            </svg>
+            <div class="timer-display">
+              <span class="timer-time" id="timer-display">25:00</span>
+              <span class="timer-sublabel" id="timer-sublabel">foco</span>
+            </div>
+          </div>
+
+          <!-- Flashcard -->
+          <div class="flashcard-area">
+            <div class="flashcard" id="flashcard" data-flipped="false">
+              <div class="flashcard-front">
+                <div class="card-type-label" id="card-type-label">Conceito</div>
+                <p class="card-question" id="card-question">Carregando...</p>
+                <button class="btn-flip" id="btn-flip">
+                  Ver resposta
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="flashcard-back">
+                <div class="card-type-label">Resposta</div>
+                <p class="card-answer" id="card-answer">...</p>
+                <div class="feynman-box" id="feynman-box">
+                  <div class="feynman-label">🧩 Técnica Feynman</div>
+                  <p class="feynman-prompt" id="feynman-prompt"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer buttons -->
+          <div class="answer-btns" id="answer-btns" style="display:none">
+            <button class="btn-wrong" id="btn-wrong">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Errei
+            </button>
+            <button class="btn-hard" id="btn-hard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Difícil
+            </button>
+            <button class="btn-correct" id="btn-correct">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Acertei
+            </button>
+          </div>
+
+          <!-- Session Summary (hidden until end) -->
+          <div class="session-summary hidden" id="session-summary">
+            <div class="summary-emoji" id="summary-emoji">🎉</div>
+            <h2 class="summary-title" id="summary-title">Sessão Completa!</h2>
+            <p class="summary-msg" id="summary-msg"></p>
+            <div class="summary-stats">
+              <div class="sum-stat green">
+                <div class="sum-stat-val" id="sum-correct">0</div>
+                <div class="sum-stat-label">Acertos</div>
+              </div>
+              <div class="sum-stat amber">
+                <div class="sum-stat-val" id="sum-hard">0</div>
+                <div class="sum-stat-label">Difíceis</div>
+              </div>
+              <div class="sum-stat red">
+                <div class="sum-stat-val" id="sum-wrong">0</div>
+                <div class="sum-stat-label">Erros</div>
+              </div>
+            </div>
+            <div class="summary-insight" id="summary-insight"></div>
+            <button class="btn-start" id="btn-new-session">Nova Sessão</button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── VIEW: MATERIAIS ─── -->
+    <section id="view-materials" class="view">
+      <header class="view-header">
+        <div>
+          <p class="view-greeting">Seus conteúdos</p>
+          <h1 class="view-title">Materiais de Estudo</h1>
+        </div>
+      </header>
+
+      <!-- Upload Area — BACKEND: endpoint para processar PDF/imagem e gerar flashcards via IA -->
+      <div class="upload-area" id="upload-area">
+        <div class="upload-icon">📤</div>
+        <h3 class="upload-title">Envie seu material</h3>
+        <p class="upload-desc">PDF, imagem, anotação ou texto — a IA converte em flashcards automaticamente</p>
+        <div class="upload-tags">
+          <span class="upload-tag">PDF</span>
+          <span class="upload-tag">Imagem</span>
+          <span class="upload-tag">Texto</span>
+          <span class="upload-tag">Print</span>
+        </div>
+        <!-- BACKEND: <input type="file" id="file-input" accept=".pdf,image/*,.txt"> -->
+        <button class="btn-upload" id="btn-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Selecionar Arquivo
+        </button>
+        <!-- BACKEND: POST /api/materials/upload → retorna flashcards gerados -->
+      </div>
+
+      <!-- Processing demo -->
+      <div class="processing-card hidden" id="processing-card">
+        <div class="processing-spinner"></div>
+        <div>
+          <div class="processing-title">Processando material...</div>
+          <div class="processing-desc">A IA está extraindo conceitos e criando flashcards</div>
+        </div>
+      </div>
+
+      <!-- Subjects List -->
+      <div class="section-header">
+        <h2 class="section-title">Matérias</h2>
+        <button class="btn-add-subject" id="btn-add-subject">+ Nova Matéria</button>
+      </div>
+
+      <div class="subjects-full-list" id="subjects-full-list">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ─── VIEW: PROGRESSO ─── -->
+    <section id="view-progress" class="view">
+      <header class="view-header">
+        <div>
+          <p class="view-greeting">Sua evolução</p>
+          <h1 class="view-title">Progresso & Análise</h1>
+        </div>
+      </header>
+
+      <!-- Overview Cards -->
+      <div class="progress-overview">
+        <div class="prog-ov-card accent">
+          <div class="prog-ov-icon">🧠</div>
+          <div class="prog-ov-val" id="ov-retention">78%</div>
+          <div class="prog-ov-label">Retenção Geral</div>
+        </div>
+        <div class="prog-ov-card">
+          <div class="prog-ov-icon">📚</div>
+          <div class="prog-ov-val" id="ov-total">237</div>
+          <div class="prog-ov-label">Total de Cards</div>
+        </div>
+        <div class="prog-ov-card">
+          <div class="prog-ov-icon">✅</div>
+          <div class="prog-ov-val" id="ov-mastered">142</div>
+          <div class="prog-ov-label">Dominados</div>
+        </div>
+        <div class="prog-ov-card">
+          <div class="prog-ov-icon">⏱️</div>
+          <div class="prog-ov-val" id="ov-time">14h</div>
+          <div class="prog-ov-label">Tempo total</div>
+        </div>
+      </div>
+
+      <!-- Weekly Chart -->
+      <div class="chart-section">
+        <div class="section-header">
+          <h2 class="section-title">Cards revisados — últimos 7 dias</h2>
+        </div>
+        <div class="bar-chart" id="weekly-chart">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Two columns -->
+      <div class="progress-cols">
+
+        <!-- Weak Points -->
+        <div class="progress-panel">
+          <h3 class="panel-title">
+            <span>⚠️</span> Pontos Fracos
+          </h3>
+          <div class="weak-list" id="weak-list">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Streak Calendar -->
+        <div class="progress-panel">
+          <h3 class="panel-title">
+            <span>🔥</span> Sequência de Estudos
+          </h3>
+          <div class="streak-info">
+            <span class="streak-big" id="streak-big">7</span>
+            <span class="streak-days-label">dias consecutivos</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Retention by Subject -->
+      <div class="section-header">
+        <h2 class="section-title">Retenção por Matéria</h2>
+      </div>
+      <div class="retention-bars" id="retention-bars">
+        <!-- Filled by JS -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════ PROCRASTINATION ALERT ═══════════════════ -->
+  <div class="proc-alert hidden" id="proc-alert">
+    <div class="proc-alert-inner">
+      <span class="proc-icon">⚡</span>
+      <div>
+        <div class="proc-title">Ei, você ainda está aí?</div>
+        <div class="proc-msg">Detectamos inatividade há 2 minutos. Volte ao foco!</div>
+      </div>
+      <button class="proc-btn" id="proc-dismiss">Voltar a focar</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TOAST ═══════════════════ -->
+  <div class="toast hidden" id="toast">
+    <span id="toast-msg"></span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

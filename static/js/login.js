@@ -47,3 +47,9 @@ async function fazerCadastro() {
         alert(data.erro);
     }
 }
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/static/js/service-worker/service-worker.js")
+    .then(() => console.log("SW registrado"))
+    .catch((err) => console.log("Erro SW:", err));
+}
