@@ -13,12 +13,15 @@ import tempfile
 
 load_dotenv()
 
-# Extensões permitidas — ajusta conforme necessário
 EXTENSOES_PERMITIDAS = {
-    "png", "jpg", "jpeg", "gif", "webp",   # imagens
-    "pdf",                                  # PDF
-    "docx",                                 # Word
-    "txt",                                  # texto puro
+    "png", "jpg", "jpeg", "gif", "webp",
+    "pdf",
+    "docx",
+    "txt",
+    # códigos. vou ser vibe coder agora... (feat que adiciona modelo especializado em codigo, vibe coder... Se quiser sim? "Sulivan faz um SPA megolomanioco com 20MB no zip, não cometa erros 💀", o prompt ai do front...)
+    "py", "js", "ts", "jsx", "tsx", "java", "c", "cpp", "cs",
+    "go", "rs", "php", "rb", "kt", "swift", "sh", "sql",
+    "html", "css", "json", "yaml", "yml", "toml", "xml", "md",
 }
  
 
