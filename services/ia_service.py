@@ -621,27 +621,26 @@ def processar_arquivo(caminho_arquivo: str, mensagem_usuario: str = "", mime_hin
             return f"O usuário enviou um documento Word.\n\nConteúdo:\n{texto}\n\nPergunta do usuário:\n{mensagem_usuario}"
         return f"O usuário enviou um documento Word, mas não foi possível extrair texto.\n\nPergunta do usuário:\n{mensagem_usuario}"
     
-    # 💻 CÓDIGO-FONTE
+     # 💻 CÓDIGO-FONTE 
     elif any(caminho_arquivo.endswith(f".{ext}") for ext in EXTENSOES_CODIGO):
         analise = analisar_codigo(caminho_arquivo, mensagem_usuario=mensagem_usuario)
         if analise:
-            return (
+            contexto_str = (
                 f"O usuário enviou um arquivo de código: `{os.path.basename(caminho_arquivo)}`\n\n"
-                f"ANÁLISE TÉCNICA (gerada pelo qwen-coder):\n{analise}\n\n"
+                f"ANÁLISE TÉCNICA ESTRUTURADA (JSON gerado pelo qwen-coder — use para embasar sua resposta, não reproduza o JSON bruto):\n{analise}\n\n"
                 f"Pergunta do usuário:\n{mensagem_usuario}"
             )
-        # fallback: injeta o código bruto
+            return contexto_str, analise 
         try:
             with open(caminho_arquivo, "r", encoding="utf-8", errors="replace") as f:
                 conteudo = f.read()
             return (
-                f"O usuário enviou um arquivo de código: `{os.path.basename(caminho_arquivo)}`\n\n"
-                f"Conteúdo:\n{conteudo[:4000]}\n\n"
-                f"Pergunta do usuário:\n{mensagem_usuario}"
+                f"O usuário enviou um arquivo de código: `{os.path.basename(caminho_arquivo)}`\n\nConteúdo:\n{conteudo[:4000]}\n\nPergunta do usuário:\n{mensagem_usuario}",
+                None
             )
         except Exception as e:
             print(f"[CODIGO] ❌ Fallback falhou: {e}")
-            return f"O usuário enviou um código, mas não foi possível processá-lo.\n\nPergunta do usuário:\n{mensagem_usuario}"
+            return f"O usuário enviou um código, mas não foi possível processá-lo.\n\nPergunta do usuário:\n{mensagem_usuario}", None
             
     # TXT
     elif mime.startswith("text"):
@@ -665,11 +664,15 @@ def processar_mensagem(mensagem: str, historico: list = None, n_total: int = 0, 
     mensagem = mensagem.strip().lower()
     historico = historico or []
 
-    #  ARQUIVO ENVIADO 
+    #ARQUIVO ENVIADO
     contexto_arquivo = ""
+    analise_codigo_raw = None
     if arquivo:
-        print(f"[MULTIMODAL] Arquivo recebido: {arquivo}")
-        contexto_arquivo = processar_arquivo(arquivo, mensagem_usuario=mensagem, mime_hint=arquivo_mime)
+        resultado_arquivo = processar_arquivo(arquivo, mensagem_usuario=mensagem, mime_hint=arquivo_mime)
+        if isinstance(resultado_arquivo, tuple):
+            contexto_arquivo, analise_codigo_raw = resultado_arquivo
+        else:
+            contexto_arquivo = resultado_arquivo
 
     #  AGENDA 
     dia_encontrado = resolve_day(mensagem)
@@ -864,10 +867,11 @@ RESPOSTA
         cache_atual, _ = _get_cache_resumo()
 
         return {
-            "source": "llm_small",
+            "source": "LLM",
             "resposta": resposta_html,
             "memoria_atualizada": memoria_atualizada,
             "resumo_memoria": cache_atual if memoria_atualizada else None,
+            "analise_codigo": analise_codigo_raw,  
         }
     except Exception as e:
         print(f"[RESPOSTA] ERRO no modelo: {e}")  # se der ruim mostra o porque

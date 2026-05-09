@@ -124,6 +124,8 @@ def chat_endpoint():
         "source": resposta_dict.get("source"),
         "memoria_atualizada": resposta_dict.get("memoria_atualizada", False),
         "resumo_memoria": resposta_dict.get("resumo_memoria"),
+        "analise_codigo": resposta_dict.get("analise_codigo"),
+
     })
 
 @app.route("/chat/arquivo", methods=["POST"])
@@ -185,6 +187,7 @@ def chat_arquivo_endpoint():
         "source": resposta_dict.get("source"),
         "memoria_atualizada": resposta_dict.get("memoria_atualizada", False),
         "resumo_memoria": resposta_dict.get("resumo_memoria"),
+        "analise_codigo": resposta_dict.get("analise_codigo"),
     })
 
 

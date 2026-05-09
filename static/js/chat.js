@@ -50,7 +50,7 @@ function esconderBarra() {
 // ─── eventos ──────────────────────────────────────────────
 infoIcon.style.cursor = 'pointer';
 infoIcon.addEventListener('click', () => {
-  clearTimeout(infoBar._hideTimer); // ← isso aqui, cancela o timer de 8s
+  clearTimeout(infoBar._hideTimer); 
   resumoCard.style.display === 'block' ? esconderCard() : mostrarCard();
 });
 
@@ -74,6 +74,64 @@ function atualizarMemoria(data) {
   infoBar._hideTimer = setTimeout(esconderBarra, 8000);
 }
 
+function renderAnaliseCodigoJson(raw) {
+    if (!raw) return '';
+    let parsed;
+    try {
+        parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch {
+        return '';
+    }
+
+    const severityColor = { low: '#6c757d', medium: '#fd7e14', high: '#e05252', critical: '#ff2e2e' };
+
+    let linhas = '';
+
+    if (parsed.type === 'bug_analysis') {
+        (parsed.bugs || []).forEach(b => {
+            linhas += `
+                <p><span class="ce-selector">${b.title}</span> <span class="ce-brace">{</span></p>
+                <p class="ce-property"><span class="ce-key">severity</span><span>: </span><span class="ce-val" style="color:${severityColor[b.severity] || '#aaa'}">${b.severity}</span>;</p>
+                <p class="ce-property"><span class="ce-key">location</span><span>: </span><span class="ce-str">${b.location}</span>;</p>
+                <p class="ce-property"><span class="ce-key">cause</span><span>: </span><span class="ce-str">${b.cause}</span>;</p>
+                <p class="ce-property"><span class="ce-key">fix</span><span>: </span><span class="ce-fix">${b.fix}</span>;</p>
+                <p><span class="ce-brace">}</span></p>
+            `;
+        });
+    } else if (parsed.type === 'code_review') {
+       const secao = (label, arr, cls) => (arr || []).map(i => {
+            const texto = typeof i === 'string'
+                ? i
+                : (i.description || i.text || i.message || i.detail || JSON.stringify(i));
+            return `<p class="ce-property"><span class="ce-key">${label}</span><span>: </span><span class="${cls}">${texto}</span>;</p>`;
+        }).join('');
+        linhas += `<p><span class="ce-selector">.review</span> <span class="ce-brace">{</span></p>`;
+        linhas += secao('problem',      parsed.problems,        'ce-warn');
+        linhas += secao('security',     parsed.security_issues, 'ce-danger');
+        linhas += secao('optimization', parsed.optimizations,   'ce-fix');
+        if (parsed.summary) linhas += `<p class="ce-property"><span class="ce-key">summary</span><span>: </span><span class="ce-str">${parsed.summary}</span>;</p>`;
+        linhas += `<p><span class="ce-brace">}</span></p>`;
+    } else {
+        return '';
+    }
+
+    const titulo = parsed.type === 'bug_analysis' ? 'bug_analysis' : 'code_review';
+
+    return `
+        <div class="code-editor ce-analise">
+            <div class="header">
+                <span class="title">qwen-coder / ${titulo}</span>
+                <svg class="icon ce-close" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-width="2" stroke="#4C4F5A" d="M6 6L18 18"/>
+                    <path stroke-linecap="round" stroke-width="2" stroke="#4C4F5A" d="M18 6L6 18"/>
+                </svg>
+            </div>
+            <div class="editor-content">
+                <code class="code">${linhas}</code>
+            </div>
+        </div>
+    `;
+}
 
 /**
  * Utilitários — copiados do app.js para manter mini_chat_home.js independente
@@ -244,7 +302,8 @@ const chat = {
         this.scrollToBottom();
     },
 
-    buildMessageHtml(who, text, source, time) {
+    // ── prefixHtml: conteúdo extra que aparece ACIMA da bolha (ex: card de análise) ──
+    buildMessageHtml(who, text, source, time, prefixHtml = '') {
         const isUser = who === 'user';
         const rowClass = isUser ? 'message-row user' : 'message-row';
         const msgClass = isUser ? 'user-message' : 'bot-message';
@@ -259,6 +318,7 @@ const chat = {
             <div class="${rowClass}">
                 <div class="msg-avatar">${icon}</div>
                 <div class="msg-content-wrapper">
+                    ${prefixHtml}
                     <div class="message ${msgClass}">${safeContent}</div>
                     <div class="msg-meta">
                         ${badgeHtml}
@@ -318,30 +378,56 @@ const chat = {
 
         let botText = '⚠️ Não consegui entender a resposta do servidor.';
         let botSource = null;
+        let analiseHtml = '';
 
-    try {
-        const res = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensagem: text })
-        });
+        try {
+            const arquivoInput = document.getElementById('file');
+            const arquivo = arquivoInput?.files?.[0];
 
-        if (!res.ok) throw new Error(`Status HTTP: ${res.status}`);
+            let res;
+            if (arquivo) {
+                const form = new FormData();
+                form.append('mensagem', text);
+                form.append('arquivo', arquivo);
+                res = await fetch('/chat/arquivo', { method: 'POST', body: form });
+                arquivoInput.value = '';
+            } else {
+                res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: text })
+                });
+            }
 
-        const data = await res.json();
-        botText = (data.response?.trim()) ? data.response :
-                (data.erro?.trim())     ? `⚠ ${data.erro}` : botText;
-        botSource = typeof data.source === 'string' ? data.source : null;
+            if (!res.ok) throw new Error(`Status HTTP: ${res.status}`);
 
-        atualizarMemoria(data); // ← aqui
+            const data = await res.json();
+            botText = (data.response?.trim()) ? data.response :
+                    (data.erro?.trim())     ? `⚠ ${data.erro}` : botText;
+            botSource = typeof data.source === 'string' ? data.source : null;
 
-    } catch (err) {
-        console.error("Erro na comunicação:", err);
-        botText = '⚠️ Servidor indisponível ou erro na requisição. Verifique sua conexão e se o backend está rodando.';
-    }       
+            atualizarMemoria(data);
+            analiseHtml = renderAnaliseCodigoJson(data.analise_codigo) || '';
+
+        } catch (err) {
+            console.error("Erro na comunicação:", err);
+            botText = '⚠️ Servidor indisponível ou erro na requisição. Verifique sua conexão e se o backend está rodando.';
+        }
+
         this.removeTypingIndicator();
         const botTime = Utils.now();
-        chatbox.insertAdjacentHTML('beforeend', this.buildMessageHtml('bot', botText, botSource, botTime));
+
+        // card de análise entra dentro da mesma bolha, acima do texto
+        chatbox.insertAdjacentHTML('beforeend',
+            this.buildMessageHtml('bot', botText, botSource, botTime, analiseHtml)
+        );
+        if (analiseHtml) {
+            chatbox.querySelector('.ce-analise:last-of-type .ce-close')
+                ?.addEventListener('click', function () {
+                    this.closest('.ce-analise').remove();
+                });
+        }
+
         this.currentMessages.push({ who: 'bot', text: botText, source: botSource, time: botTime });
 
         this.setLoadingState(false);

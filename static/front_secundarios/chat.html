@@ -438,13 +438,22 @@ const uploadManager = (() => {
 
       chat.removeTypingIndicator();
 
-      const botText   = data.response?.trim() || "⚠️ Não consegui entender a resposta.";
-      const botSource = typeof data.source === "string" ? data.source : null;
-      const botTime   = Utils.now();
+      const botText     = data.response?.trim() || "⚠️ Não consegui entender a resposta.";
+      const botSource   = typeof data.source === "string" ? data.source : null;
+      const botTime     = Utils.now();
+      // ── card de análise encaixado acima da bolha, igual ao fluxo de texto ──
+      const analiseHtml = renderAnaliseCodigoJson(data.analise_codigo) || '';
 
       chatbox.insertAdjacentHTML("beforeend",
-        chat.buildMessageHtml("bot", botText, botSource, botTime)
+        chat.buildMessageHtml("bot", botText, botSource, botTime, analiseHtml)
       );
+      if (analiseHtml) {
+        chatbox.querySelector('.ce-analise:last-of-type .ce-close')
+          ?.addEventListener('click', function () {
+            this.closest('.ce-analise').remove();
+          });
+      }
+
       chat.currentMessages.push({ who: "bot", text: botText, source: botSource, time: botTime });
 
       atualizarMemoria(data);
